@@ -4,7 +4,6 @@ from .utils.dataIO import fileIO
 import os
 import asyncio
 from datetime import datetime
-from copy import deepcopy
 
 try: # check if BeautifulSoup4 is installed
 	from bs4 import BeautifulSoup
