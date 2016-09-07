@@ -31,6 +31,6 @@ Lists existing alerts configured for your channel.
 
 Checks existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, so old items will not appear.
 
-`!tt remove <terms> <types>`
+`!tt remove <terms> <#types>`
 
 Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
