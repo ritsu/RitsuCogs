@@ -1,8 +1,8 @@
-import discord
 from discord.ext import commands
 from .utils.dataIO import fileIO
 import os
 import asyncio
+import aiohttp
 from datetime import datetime
 
 try: # check if BeautifulSoup4 is installed
@@ -10,8 +10,6 @@ try: # check if BeautifulSoup4 is installed
 	soupAvailable = True
 except:
 	soupAvailable = False
-
-import aiohttp
 
 class TokyoTosho:
     """TokyoTosho search and RSS alerts"""
