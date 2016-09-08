@@ -29,7 +29,7 @@ Output Options
 Input
     URL     If input matches a URL pattern, bot will fetch URL content as input.
             By default, DOM will be parsed from URL content and text elements will be treated as "lines"
-            If -s option is set, URL content will be treated as plain text.
+            If -p option is set, URL content will be treated as plain text.
     @chat   If '@chat' is specified as the input, will search in chat log.
             Logging must be activated in the channel for this to work.
     <input> If none of the previous inputs are detected, remaining text is treated as input.
@@ -67,6 +67,48 @@ Options
     -n      Number all output lines, starting with 1. This option is ignored if -b is in effect.
     -s      Suppress repeated adjacent blank lines; output just one empty line instead of several.
     -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
+            If -p option is set, URL content will be treated as plain text.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
+```
+
+### tac
+
+<i>tac</i> echoes input to output in reverse by line or user specified separator
+
+```tac [options] [input]```
+```
+Options
+    -s sep  Use "sep" as the record separator, instead of newline.
+    -r      Treat the separator string as a regular expression.
+    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
+            If -p option is set, URL content will be treated as plain text.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
+```
+
+### tail
+
+<i>tail</i> prints the last part (10 lines by default) of input
+
+```tail [options] [input]```
+```
+Options
+    -n [+]num   Output the last num lines. However, if num is prefixed with a '+'
+                start printing with line num from the start of input, instead of from the end.
+    -p          If input is a URL, this will treat the URL content as plain text instead of a DOM
 
 Input
     URL     If input matches a URL pattern, will attempt to fetch URL content.
