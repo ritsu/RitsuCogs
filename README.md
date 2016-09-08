@@ -19,7 +19,7 @@ Matching Options
     -r      Treats search string as a regex pattern; other Matching Options are ignored.
 
 Input Options
-    -s      If input is a URL, this will treat the URL content as plain text instead of a DOM
+    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
 
 Output Options
     -c      Suppress normal output; instead print a count of matching lines for each input file.
@@ -50,6 +50,28 @@ Options
 Input
     URL     If input matches a URL pattern, will attempt to fetch URL content.
             URL content is treated as plain text; DOM is never parsed.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
+```
+
+### cat
+
+<i>cat</i> echoes the contents of the input
+
+```cat [options] [input]```
+```
+Options
+    -b      Number all nonempty output lines, starting with 1.
+    -n      Number all output lines, starting with 1. This option is ignored if -b is in effect.
+    -s      Suppress repeated adjacent blank lines; output just one empty line instead of several.
+    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
+            If -p option is set, URL content will be treated as plain text.
     @chat   If '@chat' is specified as the input, will search in chat log.
             Logging must be activated in the channel for this to work.
     <input> If none of the previous inputs are detected, remaining text is treated as input.
