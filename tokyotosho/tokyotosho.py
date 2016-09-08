@@ -40,9 +40,9 @@ class TokyoTosho:
 
     @tt.command(pass_context=True, name='search', aliases=['s'])
     async def ttsearch(self, ctx, *query: str):
-        """Search tokyotosho: !tt search <term>+ (-<term>*) (#<type>)
+        """Search TokyoTosho and display results
 
-        Displays search results and link to TokyoTosho
+        !tt search <term>+ (-<term>*) (#<type>)
 
         Examples:
             search horriblesubs madoka 1080
@@ -110,7 +110,9 @@ class TokyoTosho:
 
     @tt.command(pass_context=True, name='add', aliases=['a'])
     async def ttadd(self, ctx, *query: str):
-        """Add RSS alert for new torrents: !tt add (<term>*) (-<term>*) (#<type>*)
+        """Add an RSS alert for new torrents on TokyoTosho
+
+        !tt add (<term>*) (-<term>*) (#<type>*)
 
         Examples:
             add horriblesubs madoka 1080
@@ -173,7 +175,10 @@ class TokyoTosho:
 
     @tt.command(pass_context=True, name='remove', aliases=['r'])
     async def ttremove(self, ctx, *query: str):
-        """Remove RSS alert: !tt remove <term>+ (-<term>*) (#<type>*)"""
+        """Remove an RSS alert
+
+        !tt remove <term>+ (-<term>*) (#<type>*)
+        """
 
         channel = ctx.message.channel
 
@@ -235,7 +240,7 @@ class TokyoTosho:
 
     @tt.command(pass_context=True, name='check', aliases=['c'])
     async def ttcheck(self, ctx, *query: str):
-        """Check alerts against current RSS feed"""
+        """Check current RSS alerts against RSS feed"""
 
         # get rss
         url = TokyoTosho.base_url + "rss.php"
@@ -290,7 +295,7 @@ class TokyoTosho:
 
     @tt.command(pass_context=True, name='types', aliases=['t'])
     async def tttypes(self, context):
-        """Show valid categories/types"""
+        """Show valid types/categories"""
 
         await self.bot.say(", ".join(sorted(TokyoTosho.types.keys())))
 
