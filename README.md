@@ -2,6 +2,36 @@
 
 Some custom cogs for Red-DiscordBot
 
+## GNU
+
+An attempt to emulate some common GNU utilities
+
+### grep
+
+<i>grep</i> prints lines that contain a match for a pattern.
+
+```grep <options> <pattern> <input>```
+```
+Matching Options
+    -i      Ignore case distinctions, so that characters that differ only in case match each other.
+    -w      Select only those lines containing matches that form whole words.
+    -v      Invert the sense of matching, to select non-matching lines.
+    -r      Treats search string as a regex pattern. Other Matching Options are ignored.
+
+Output Options
+    -c      Suppress normal output; instead print a count of matching lines for each input file.
+    -n      Prefix each line of output with its line number.
+    -m num  Stop reading from input after num matching lines.
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            DOM text elements correspond to 'lines' in this context.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as raw input.
+            Note: Discord chat messages are treated as a single line even if they include linebreaks.
+```
+
 ## TokyoTosho
 
 ### Get search results in your discord channel
