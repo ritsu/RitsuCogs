@@ -10,13 +10,16 @@ An attempt to emulate some common GNU utilities
 
 <i>grep</i> prints lines that contain a match for a pattern.
 
-```grep <options> <pattern> <input>```
+```grep [options] [pattern] [input]```
 ```
 Matching Options
     -i      Ignore case distinctions, so that characters that differ only in case match each other.
     -w      Select only those lines containing matches that form whole words.
     -v      Invert the sense of matching, to select non-matching lines.
-    -r      Treats search string as a regex pattern. Other Matching Options are ignored.
+    -r      Treats search string as a regex pattern; other Matching Options are ignored.
+
+Input Options
+    -s      If input is a URL, this will treat the URL content as plain text instead of a DOM
 
 Output Options
     -c      Suppress normal output; instead print a count of matching lines for each input file.
@@ -24,12 +27,33 @@ Output Options
     -m num  Stop reading from input after num matching lines.
 
 Input
-    URL     If input matches a URL pattern, will attempt to fetch URL content.
-            DOM text elements correspond to 'lines' in this context.
+    URL     If input matches a URL pattern, bot will fetch URL content as input.
+            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
+            If -s option is set, URL content will be treated as plain text.
     @chat   If '@chat' is specified as the input, will search in chat log.
             Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as raw input.
-            Note: Discord chat messages are treated as a single line even if they include linebreaks.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
+```
+
+### wc
+
+<i>wc</i> counts the number of characters, whitespace-separated words, and newlines in the given input.
+
+```wc [option] [input]```
+```
+Options
+    -m      Print only the character counts.
+    -w      Print only the word counts.
+    -l      Print only the newline counts.
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            URL content is treated as plain text; DOM is never parsed.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
 
 ## TokyoTosho
