@@ -112,7 +112,7 @@ class GNU:
                                "\n\nInput"
                                "\n\tURL     If input matches a URL pattern, bot will fetch URL content as input."
                                "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -s option is set, URL content will be treated as plain text."
+                               "\n\t        If -p option is set, URL content will be treated as plain text."
                                "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
                                "\n\t        Logging must be activated in the channel for this to work."
                                "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
