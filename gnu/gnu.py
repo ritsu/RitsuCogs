@@ -1,5 +1,7 @@
 from discord.ext import commands
 import re
+import red
+import copy
 import sys
 from .utils.dataIO import fileIO
 import os
@@ -18,6 +20,9 @@ class GNU:
 
     more_limit = 5
 
+    # using a dict in case command and function are different; key = cmd, value = func
+    command_list = {"grep": "grep", "wc": "wc", "tail": "tail", "cat": "cat", "tac": "tac"}
+
     def __init__(self, bot):
         self.bot = bot
         #self.log = fileIO("data/gnu/log.json", "load")
@@ -25,14 +30,60 @@ class GNU:
         self.stdout = ""
 
     @commands.command(pass_context=True, name='grep')
-    async def grep(self, ctx, *query: str):
+    async def grep(self, ctx, *args, **kwargs):
         """Print lines that contain a match for a pattern
 
         Type !grep for more information.
         """
 
-        # display help if no arguments passed
-        if not query:
+        #await self.bot.say("args: " + str(args) + " : " + str(type(args)))
+        #await self.bot.say("kwargs: " + str(kwargs) + " : " + str(type(args)))
+
+        # parse user command
+        search = ""
+        input = []
+        option = set()
+        option_num = {"m" : 0}
+        pipe = []
+        iterator = args.__iter__()
+        for arg in iterator:
+            if arg == '|':
+                while True:
+                    try:
+                        pipe.append(next(iterator))
+                    except:
+                        break
+            elif arg[0] == '-':
+                option.add(arg[1:])
+                if 'm' in arg[:]:
+                    option_num['m'] = int(next(iterator))
+            elif not search:
+                search = arg
+            else:
+                input.append(arg)
+        input = " ".join(input)
+
+        # break up combined options
+        for opt in list(option):
+            if len(opt) > 1:
+                for o in opt[:]:
+                    option.add(o)
+                option.remove(opt)
+
+        # try pipe_in if input is empty
+        if not input and "pipe_in" in kwargs:
+            input = kwargs["pipe_in"]
+
+        '''
+        await self.bot.say("option: " + str(option))
+        await self.bot.say("option_num: " + str(option_num))
+        await self.bot.say("search: " + search)
+        await self.bot.say("input: " + input)
+        await self.bot.say("pipe: " + str(pipe))
+        '''
+
+        # display help and return if search or input are empty
+        if not search or not input:
             await self.bot.say("*grep* prints lines that contain a match for a pattern.")
             await self.bot.say("```grep [options] [pattern] [input]```")
             await self.bot.say("```"
@@ -58,41 +109,11 @@ class GNU:
                                "```")
             return
 
-        # parse user command
-        search = ""
-        input = ""
-        option = set()
-        option_num = {"m" : 0}
-        iterator = query.__iter__()
-        for q in iterator:
-            if q[0] == '-':
-                option.add(q[1:])
-                if 'm' in q[:]:
-                    option_num['m'] = int(next(iterator))
-            elif not search:
-                search = q
-            else:
-                if input:
-                    input += ' '
-                input += q
-
-        # break up combined options
-        for opt in list(option):
-            if len(opt) > 1:
-                for o in opt[:]:
-                    option.add(o)
-                option.remove(opt)
-
-        #await self.bot.say("option: " + str(option))
-        #await self.bot.say("option_num: " + str(option_num))
-        #await self.bot.say("search: " + search)
-        #await self.bot.say("input: " + input)
-
         # prepare search regex
         if 'r' in option:
             search_pattern = re.compile(r"{0}".format(search))
         else:
-            re.escape(search)
+            search = re.escape(search)
             if 'w' in option:
                 search = "\\b" + search + "\\b"
             if 'v' in option:
@@ -138,15 +159,15 @@ class GNU:
             # user input
             input = input.splitlines()
 
+        # do grep
+        pipe_out = []
         found = 0
-        empty = 0
         for i, line in enumerate(input):
             #await self.bot.say(str(i) + ": " + line)
             if len(line) <= 1:
-                empty += 1
                 continue # debatable whether this should be here or not
 
-            # do output
+            # look for match
             match = search_pattern.search(line)
             if match:
                 # record match
@@ -163,14 +184,19 @@ class GNU:
                             end = len(line)
                         line = line[start:end]
 
-                    # print output
+                    # generate output
                     if 'n' in option:
-                        await self.bot.say("```{0:>6}: {1}```".format(i, line))
+                        out = "{0:>6}: {1}".format(i, line)
                     else:
-                        await self.bot.say("```{0}```".format(line))
+                        out = line
+                    # print output
+                    if pipe:
+                        pipe_out.append(out)
+                    else:
+                        await self.bot.say("```{0}```".format(out))
 
                     # flood prevention
-                    if found % GNU.more_limit == 0:
+                    if not pipe and found % GNU.more_limit == 0:
                         await self.bot.say("Type 'more' or 'm' to continue...")
                         answer = await self.bot.wait_for_message(timeout=15,
                                                                  author=ctx.message.author)
@@ -182,21 +208,70 @@ class GNU:
                 if 'm' in option and found >= option_num['m']:
                     break
 
-        if found == 1:
-            await self.bot.say(str(found) + " matching line found.")
-        else:
-            await self.bot.say(str(found) + " matching lines found.")
-        #await self.bot.say(str(i) + " lines, " + str(empty) + " empty")
+        # output for c option
+        if 'c' in option:
+            out = str(found)
+            if pipe:
+                pipe_out.append(out)
+            else:
+                await self.bot.say("```{0}```".format(out))
+
+        # print summary
+        if not pipe:
+            if found == 1:
+                await self.bot.say(str(found) + " matching line found.")
+            else:
+                await self.bot.say(str(found) + " matching lines found.")
+
+        # handle pipe
+        if pipe:
+            cmd = pipe[0]
+            if cmd[0] != ctx.prefix:
+                await self.bot.say("```{0}: command prefix missing```".format(cmd))
+                return
+            elif cmd[1:] not in GNU.command_list.keys():
+                await self.bot.say("```{0}: command not found```".format(cmd))
+                return
+            func = getattr(GNU, GNU.command_list[cmd[1:]])
+            if len(pipe) > 1:
+                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+            else:
+                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
 
     @commands.command(pass_context=True, name='wc')
-    async def wc(self, ctx, *query: str):
+    async def wc(self, ctx, *args, **kwargs):
         """Count the number of characters, whitespace-separated words, and newlines
 
         Type !wc for more information.
         """
+        if "pipe_in" in kwargs:
+            await self.bot.say("pipe_in=[" + kwargs["pipe_in"] + "]")
 
-        # display help if no arguments passed
-        if not query:
+        # parse user command
+        input = []
+        option = set()
+        pipe = []
+        iterator = args.__iter__()
+        for arg in iterator:
+            if arg == '|':
+                while True:
+                    try:
+                        pipe.append(next(iterator))
+                    except:
+                        break
+            elif arg[0] == '-':
+                # assume no combined options, since all options are exclusive
+                option.add(arg[1:])
+            else:
+                input.append(arg)
+        input = " ".join(input)
+
+        # try pipe_in if input is empty
+        if not input and "pipe_in" in kwargs:
+            input = kwargs["pipe_in"]
+
+        # display help if input is empty
+        if not input:
             await self.bot.say("*wc* counts the number of characters, whitespace-separated words, and newlines in the given input.")
             await self.bot.say("```wc [option] [input]```")
             await self.bot.say("```"
@@ -213,18 +288,6 @@ class GNU:
                                "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
                                "```")
             return
-
-        # parse user command
-        input = ""
-        option = set()
-        for q in query:
-            # assume no combined options, since all options are exclusive
-            if q[0] == '-':
-                option.add(q[1:])
-            else:
-                if input:
-                    input += ' '
-                input += q
 
         # handle various types of input
         url_pattern = re.compile(
@@ -268,9 +331,54 @@ class GNU:
             data = str(lines)
         else:
             header = "{0:<10}{1:<10}{2:<10}".format("char", "words", "lines")
-            hr = "\n" + "-" * 30
-            data = "\n{0:<10}{1:<10}{2:<10}".format(chars, words, lines)
-        await self.bot.say("```" + header + hr + data + "```")
+            hr = "-" * 30
+            data = "{0:<10}{1:<10}{2:<10}".format(chars, words, lines)
+
+        pipe_out = []
+        if pipe:
+            pipe_out = [header, hr, data]
+        else:
+            await self.bot.say("```" + "\n".join([header, hr, data]) + "```")
+
+        # handle pipe
+        if pipe:
+            cmd = pipe[0]
+            if cmd[0] != ctx.prefix:
+                await self.bot.say("```{0}: command prefix missing```".format(cmd))
+                return
+            elif cmd[1:] not in GNU.command_list.keys():
+                await self.bot.say("```{0}: command not found```".format(cmd))
+                return
+            func = getattr(GNU, GNU.command_list[cmd[1:]])
+            if len(pipe) > 1:
+                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+            else:
+                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+
+    @commands.command(pass_context=True, name='tail')
+    async def tail(self, ctx, *args, **kwargs):
+        """Prints the last part (10 lines by default) of input
+
+        Type !tail for more information.
+        """
+        pass
+
+    @commands.command(pass_context=True, name='cat')
+    async def cat(self, ctx, *args, **kwargs):
+        """Echoes input to output
+
+        Type !cat for more information.
+        """
+        pass
+
+    @commands.command(pass_context=True, name='tac')
+    async def tac(self, ctx, *args, **kwargs):
+        """Echoes input to output in reverse
+
+        Type !tac for more information.
+        """
+        pass
+
 
 
 def setup(bot):
