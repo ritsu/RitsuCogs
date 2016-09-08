@@ -166,6 +166,7 @@ class GNU:
         # do grep
         pipe_out = []
         found = 0
+        lines_displayed = 0
         for i, line in enumerate(input):
             #await self.bot.say(str(i) + ": " + line)
             # look for match
@@ -185,6 +186,14 @@ class GNU:
                             end = len(line)
                         line = line[start:end]
 
+                    # flood prevention
+                    if lines_displayed > 0 and lines_displayed % GNU.more_limit == 0:
+                        await self.bot.say("Type 'more' or 'm' to continue...")
+                        answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
+                        if not answer or answer.content.lower() not in ["more", "m"]:
+                            await self.bot.say("Stopping with " + str(found) + " matching lines found.")
+                            return
+
                     # generate output
                     if 'n' in option:
                         out = "{0:>6}: {1}".format(i, line)
@@ -192,17 +201,10 @@ class GNU:
                         out = line
                     # print output
                     if pipe:
-                        pipe_out.append(out)
+                        pipe_out.append(out.strip("\n"))
                     else:
                         await self.bot.say("```{0}```".format(out))
-
-                    # flood prevention
-                    if not pipe and found % GNU.more_limit == 0:
-                        await self.bot.say("Type 'more' or 'm' to continue...")
-                        answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
-                        if not answer or answer.content.lower() not in ["more", "m"]:
-                            await self.bot.say("Stopping with " + str(found) + " matching lines found.")
-                            return
+                        lines_displayed += 1
 
                 # stop if m option set and limit reached
                 if 'm' in option and found >= option_num['m']:
@@ -352,7 +354,134 @@ class GNU:
 
         Type !tail for more information.
         """
-        pass
+
+        # parse user command
+        input = []
+        option = set()
+        option_num = ""
+        pipe = []
+        iterator = args.__iter__()
+        for arg in iterator:
+            if arg == '|':
+                while True:
+                    try:
+                        pipe.append(next(iterator))
+                    except:
+                        break
+            elif arg[0] == '-':
+                option.add(arg[1:])
+                if 'n' in arg:
+                    option_num = next(iterator)
+            else:
+                input.append(arg)
+        input = " ".join(input)
+
+        # break up combined options
+        for opt in list(option):
+            if len(opt) > 1:
+                for o in opt[:]:
+                    option.add(o)
+                option.remove(opt)
+
+        # try pipe_in if input is empty
+        if not input and "pipe_in" in kwargs:
+            input = kwargs["pipe_in"]
+
+        # display help if input is empty
+        if not input:
+            await self.bot.say("*tail* prints the last part (10 lines by default) of input")
+            await self.bot.say("```tail [options] [input]```")
+            await self.bot.say("```"
+                               "\nOptions"
+                               "\n\t-n [+]num   Output the last num lines. However, if num is prefixed with a '+'"
+                               "\n\t            start printing with line num from the start of input, instead of from the end."
+                               "\n\t-p          If input is a URL, this will treat the URL content as plain text instead of a DOM"
+                               "\n\nInput"
+                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
+                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
+                               "\n\t        If -p option is set, URL content will be treated as plain text."
+                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
+                               "\n\t        Logging must be activated in the channel for this to work."
+                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
+                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "```")
+            return
+
+        if GNU.url_pattern.match(input):
+            #await self.bot.say("Querying `" + input + "`")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(input) as response:
+                    response_text = await response.text()
+                    if 'p' in option:
+                        # plain text url content
+                        input = response_text.splitlines()
+                    else:
+                        # parse DOM
+                        def visible(element):
+                            if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+                                return False
+                            elif re.match('<!--.*-->', str(element)):
+                                return False
+                            return True
+                        soup = BeautifulSoup(response_text, "html.parser")
+                        texts = soup.findAll(text=True)
+                        input_texts = filter(visible, texts)
+                        input = [line for line in input_texts]
+        elif input.lower() == "@chat":
+            # handle chat log input
+            await self.bot.say("Sorry, @chat is not supported at this time.")
+            return
+        else:
+            # user input
+            input = input.splitlines()
+
+        # determine range
+        if option_num:
+            if option_num[0] == '+':
+                pos = int(option_num[1:]) - 1
+            else:
+                pos = len(input) - int(option_num)
+        else:
+            pos = len(input) - 10
+        if pos < 0:
+            pos = 0
+
+        # do tail
+        pipe_out = []
+        lines_displayed = 0
+        for line in input[pos:]:
+            # truncate messages that are too long
+            if len(line) > GNU.max_message_length and not pipe:
+                line = line[:(GNU.max_message_length - 12)] + " [TRUNCATED]"
+            # flood prevention
+            if lines_displayed > 0 and lines_displayed % GNU.more_limit == 0:
+                await self.bot.say("Type 'more' or 'm' to continue...")
+                answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
+                if not answer or answer.content.lower() not in ["more", "m"]:
+                    await self.bot.say("Command output stopped.")
+                    return
+            # display output
+            if pipe:
+                pipe_out.append(line.strip("\n"))
+            else:
+                await self.bot.say("```{0}```".format(line))
+                lines_displayed += 1
+
+        # handle pipe
+        if pipe:
+            cmd = pipe[0]
+            if cmd[0] != ctx.prefix:
+                await self.bot.say("```{0}: command prefix missing```".format(cmd))
+                return
+            elif cmd[1:] not in GNU.command_list.keys():
+                await self.bot.say("```{0}: command not found```".format(cmd))
+                return
+            func = getattr(GNU, GNU.command_list[cmd[1:]])
+            if len(pipe) > 1:
+                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+            else:
+                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+
 
     @commands.command(pass_context=True, name='cat')
     async def cat(self, ctx, *args, **kwargs):
@@ -374,7 +503,6 @@ class GNU:
                     except:
                         break
             elif arg[0] == '-':
-                # assume no combined options, since all options are exclusive
                 option.add(arg[1:])
             else:
                 input.append(arg)
@@ -464,19 +592,19 @@ class GNU:
             # truncate messages that are too long
             if len(out) > GNU.max_message_length and not pipe:
                 out = out[:(GNU.max_message_length - 12)] + " [TRUNCATED]"
-            # display output
-            if pipe:
-                pipe_out.append(out)
-            else:
-                await self.bot.say("```{0}```".format(out))
-                lines_displayed += 1
             # flood prevention
-            if not pipe and lines_displayed % GNU.more_limit == 0:
+            if lines_displayed > 0 and lines_displayed % GNU.more_limit == 0:
                 await self.bot.say("Type 'more' or 'm' to continue...")
                 answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
                 if not answer or answer.content.lower() not in ["more", "m"]:
                     await self.bot.say("Command output stopped.")
                     return
+            # display output
+            if pipe:
+                pipe_out.append(out.strip("\n"))
+            else:
+                await self.bot.say("```{0}```".format(out))
+                lines_displayed += 1
             # set prev_empty
             if not line.strip():
                 prev_empty = True
@@ -506,11 +634,142 @@ class GNU:
 
     @commands.command(pass_context=True, name='tac')
     async def tac(self, ctx, *args, **kwargs):
-        """Echoes input to output in reverse by line
+        """Echoes input to output in reverse by line or user specified separator
 
         Type !tac for more information.
         """
-        pass
+
+        # parse user command
+        input = []
+        option = set()
+        option_sep = ""
+        pipe = []
+        iterator = args.__iter__()
+        for arg in iterator:
+            if arg == '|':
+                while True:
+                    try:
+                        pipe.append(next(iterator))
+                    except:
+                        break
+            elif arg[0] == '-':
+                option.add(arg[1:])
+                if 's' in arg:
+                    option_sep = next(iterator)
+            else:
+                input.append(arg)
+        input = " ".join(input)
+
+        # break up combined options
+        for opt in list(option):
+            if len(opt) > 1:
+                for o in opt[:]:
+                    option.add(o)
+                option.remove(opt)
+
+        # try pipe_in if input is empty
+        if not input and "pipe_in" in kwargs:
+            input = kwargs["pipe_in"]
+
+        # display help if input is empty
+        if not input:
+            await self.bot.say("*tac* echoes input to output in reverse by line or user specified separator")
+            await self.bot.say("```tac [options] [input]```")
+            await self.bot.say("```"
+                               "\nOptions"
+                               "\n\t-s sep  Use \"sep\" as the record separator, instead of newline."
+                               "\n\t-r      Treat the separator string as a regular expression."
+                               "\n\t-p      If input is a URL, this will treat the URL content as plain text instead of a DOM"
+                               "\n\nInput"
+                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
+                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
+                               "\n\t        If -p option is set, URL content will be treated as plain text."
+                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
+                               "\n\t        Logging must be activated in the channel for this to work."
+                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
+                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "```")
+            return
+
+        if GNU.url_pattern.match(input):
+            #await self.bot.say("Querying `" + input + "`")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(input) as response:
+                    response_text = await response.text()
+                    if 'p' in option:
+                        # plain text url content
+                        input = response_text
+                    else:
+                        # parse DOM
+                        def visible(element):
+                            if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+                                return False
+                            elif re.match('<!--.*-->', str(element)):
+                                return False
+                            return True
+                        soup = BeautifulSoup(response_text, "html.parser")
+                        texts = soup.findAll(text=True)
+                        input_texts = filter(visible, texts)
+                        input = "\n".join([line for line in input_texts])
+        elif input.lower() == "@chat":
+            # handle chat log input
+            await self.bot.say("Sorry, @chat is not supported at this time.")
+            return
+        else:
+            # user input
+            pass
+
+        # split input
+        if option_sep:
+            if 'r' in option:
+                separator = re.compile(r"{0}".format(option_sep))
+                input = separator.split(input)
+            else:
+                input = input.split(option_sep)
+        else:
+            input = input.splitlines()
+
+        # do cat (on reversed string)
+        pipe_out = []
+        lines_displayed = 0
+        for line in reversed(input):
+            #await self.bot.say(str(i) + ": " + line)
+            # truncate messages that are too long
+            if len(line) > GNU.max_message_length and not pipe:
+                line = line[:(GNU.max_message_length - 12)] + " [TRUNCATED]"
+            # flood prevention
+            if lines_displayed > 0 and lines_displayed % GNU.more_limit == 0:
+                await self.bot.say("Type 'more' or 'm' to continue...")
+                answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
+                if not answer or answer.content.lower() not in ["more", "m"]:
+                    await self.bot.say("Command output stopped.")
+                    return
+            # display output
+            if pipe:
+                pipe_out.append(line.strip("\n"))
+            else:
+                await self.bot.say("```{0}```".format(line))
+                lines_displayed += 1
+
+        # let user know end of file has been reached (maybe superfluous)
+        if not pipe:
+            #await self.bot.say("Done.")
+            pass
+
+        # handle pipe
+        if pipe:
+            cmd = pipe[0]
+            if cmd[0] != ctx.prefix:
+                await self.bot.say("```{0}: command prefix missing```".format(cmd))
+                return
+            elif cmd[1:] not in GNU.command_list.keys():
+                await self.bot.say("```{0}: command not found```".format(cmd))
+                return
+            func = getattr(GNU, GNU.command_list[cmd[1:]])
+            if len(pipe) > 1:
+                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+            else:
+                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
 
 
 
