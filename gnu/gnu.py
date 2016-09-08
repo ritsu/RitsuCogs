@@ -1,7 +1,5 @@
 from discord.ext import commands
 import re
-import red
-import copy
 import sys
 from .utils.dataIO import fileIO
 import os
@@ -244,8 +242,6 @@ class GNU:
 
         Type !wc for more information.
         """
-        if "pipe_in" in kwargs:
-            await self.bot.say("pipe_in=[" + kwargs["pipe_in"] + "]")
 
         # parse user command
         input = []
