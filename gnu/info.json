@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "kagami#6142",
+    "NAME" : "GNU",
+    "SHORT" : "Some GNU utilities",
+    "DESCRIPTION" : "An attempt to emulate some common GNU utilities"
+}
