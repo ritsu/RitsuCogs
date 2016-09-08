@@ -6,7 +6,7 @@ Some custom cogs for Red-DiscordBot
 
 ### Get search results in your discord channel
 
-`!tt search <terms> <type>`
+`!tt search <terms> <#type>`
 
 <b>terms</b> are normal searech terms. Prepend a "-" for exclusion terms.  
 <b>type</b> (optional) is one of the types/categories defined on TokyoTosho. Type `!tt types` to see a list of valid types.
@@ -15,7 +15,7 @@ Example: `!tt search madoka rebellion -dub #anime`
 
 ### Show RSS alerts in your discord channel
 
-`!tt add <terms> <types>`
+`!tt add <terms> <#types>`
 
 Adds an alert to your channel. The bot will display torrent name and link when a new torrent matching the configured <b>terms</b> and <b>types</b> (optional) appears in TokyoTosho's RSS feed. Note you can specify multiple types for RSS alerts.
 
@@ -31,6 +31,6 @@ Lists existing alerts configured for your channel.
 
 Checks existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, so old items will not appear.
 
-`!tt remove <terms> <types>`
+`!tt remove <terms> <#types>`
 
 Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
