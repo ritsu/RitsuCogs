@@ -1,11 +1,6 @@
 from discord.ext import commands
 import re
-import sys
-from .utils.dataIO import fileIO
-import os
-import asyncio
 import aiohttp
-from datetime import datetime
 
 try: # check if BeautifulSoup4 is installed
 	from bs4 import BeautifulSoup
@@ -393,7 +388,7 @@ class GNU:
             await self.bot.say("```tail [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-n [+]num   Output the last num lines. However, if num is prefixed with a '+'"
+                               "\n\t-n [+]num   Output the last num lines. However, if num is prefixed with a '+',"
                                "\n\t            start printing with line num from the start of input, instead of from the end."
                                "\n\t-p          If input is a URL, this will treat the URL content as plain text instead of a DOM"
                                "\n\nInput"
