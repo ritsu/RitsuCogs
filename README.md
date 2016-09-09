@@ -1,12 +1,13 @@
 # RitsuCogs
 
-Some custom cogs for Red-DiscordBot
+Some custom cogs for Red-DiscordBot  
+Add repo: ```!cog repo add ritsu-cogs https://github.com/ritsu/RitsuCogs```
 
 ## GNU
 
 An attempt to emulate some common GNU utilities. Pipes are supported, for example:  
 ```
-!sed "s/^.{0,20}$/ /" http://news.google.com | !grep -i apple | !sed s/apple/Orange/i | !tail -n 5
+!sed "s/^.{0,20}$//" http://news.google.com | !grep -i apple | !sed s/apple/Orange/i | !tail -n 5
 ```
 
 ### grep
