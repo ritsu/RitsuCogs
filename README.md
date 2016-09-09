@@ -4,7 +4,7 @@ Some custom cogs for Red-DiscordBot
 
 ## GNU
 
-An attempt to emulate some common GNU utilities. Pipes is supported, for example:  
+An attempt to emulate some common GNU utilities. Pipes are supported, for example:  
 ```
 !sed "s/^.{0,20}$/ /" http://news.google.com | !grep -i apple | !sed s/apple/Orange/i | !tail -n 5
 ```
