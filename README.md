@@ -74,7 +74,7 @@ Options
 
 ### cat
 
-<i>cat</i> echoes the contents of the input
+<i>cat</i> echoes the contents of the input.
 
 ```cat [options] [input]```
 ```
@@ -87,7 +87,7 @@ Options
 
 ### tac
 
-<i>tac</i> echoes input to output in reverse by line or user specified separator
+<i>tac</i> echoes input to output in reverse by line or user specified separator.
 
 ```tac [options] [input]```
 ```
@@ -99,7 +99,7 @@ Options
 
 ### tail
 
-<i>tail</i> prints the last part (10 lines by default) of input
+<i>tail</i> prints the last part (10 lines by default) of input.
 
 ```tail [options] [input]```
 ```
