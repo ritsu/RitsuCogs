@@ -260,11 +260,17 @@ class GNU:
                     except:
                         break
             elif arg[0] == '-':
-                # assume no combined options, since all options are exclusive
                 option.add(arg[1:])
             else:
                 input.append(arg)
         input = " ".join(input)
+
+        # break up combined options
+        for opt in list(option):
+            if len(opt) > 1:
+                for o in opt[:]:
+                    option.add(o)
+                option.remove(opt)
 
         # try pipe_in if input is empty
         if not input and "pipe_in" in kwargs:
@@ -290,12 +296,28 @@ class GNU:
             return
 
         # handle various types of input
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
                 async with session.get(input) as response:
-                    input = await response.text()
-
+                    response_text = await response.text()
+                    if 'p' in option:
+                        # plain text url content
+                        input = response_text
+                    else:
+                        # parse DOM
+                        def visible(element):
+                            if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+                                return False
+                            elif re.match('<!--.*-->', str(element)):
+                                return False
+                            return True
+                        soup = BeautifulSoup(response_text, "html.parser")
+                        texts = soup.findAll(text=True)
+                        input_texts = filter(visible, texts)
+                        input = "\n".join([line for line in input_texts])
+                        dom_source = True
         elif input.lower() == "@chat":
             # handle chat log input
             await self.bot.say("Sorry, @chat is not supported at this time.")
@@ -389,7 +411,7 @@ class GNU:
 
         # display help if input is empty
         if not input:
-            await self.bot.say("*tail* prints the last part (10 lines by default) of input")
+            await self.bot.say("*tail* prints the last part (10 lines by default) of input.")
             await self.bot.say("```tail [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
@@ -527,7 +549,7 @@ class GNU:
 
         # display help if input is empty
         if not input:
-            await self.bot.say("*cat* echoes the contents of the input")
+            await self.bot.say("*cat* echoes the contents of the input.")
             await self.bot.say("```cat [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
@@ -684,7 +706,7 @@ class GNU:
 
         # display help if input is empty
         if not input:
-            await self.bot.say("*tac* echoes input to output in reverse by line or user specified separator")
+            await self.bot.say("*tac* echoes input to output in reverse by line or user specified separator.")
             await self.bot.say("```tac [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
@@ -795,10 +817,10 @@ class GNU:
         """
 
         if not args:
-            await self.bot.say("*sed* is a simple stream editor")
-            await self.bot.say("```sed [option] [script] [input]```")
+            await self.bot.say("*sed* is a simple stream editor.")
+            await self.bot.say("```sed [options] [script] [input]```")
             await self.bot.say("```"
-                               "\nOption"
+                               "\nOptions"
                                "\n\t-g      Process entire input as a single string, rather than line by line."
                                "\n\t-n      Disable automatic printing; only produce output when explicitly told to."
                                "\n\nScript Address"
