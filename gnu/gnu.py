@@ -825,6 +825,7 @@ class GNU:
                                "\nOptions"
                                "\n\t-g      Process entire input as a single string, rather than line by line."
                                "\n\t-n      Disable automatic printing; only produce output when explicitly told to."
+                               "\n\t-p      If input is a URL, this will treat the URL content as plain text instead of a DOM"
                                "\n\nScript Address"
                                "\n\t/.*/    Returns lines that match the regular expression."
                                "\n\tA       Returns line number A."
@@ -903,10 +904,10 @@ class GNU:
             # get tuple for address range
             if ',' in match.group(0):
                 address_type = "range"
-                address = (match.group(0)[:match.group(0).index(',')], match.group(0)[match.group(0).index(',') + 1:])
+                address = [match.group(0)[:match.group(0).index(',')], match.group(0)[match.group(0).index(',') + 1:]]
             elif '~' in match.group(0):
                 address_type = "step"
-                address = (match.group(0)[:match.group(0).index('~')], match.group(0)[match.group(0).index('~') + 1:])
+                address = [match.group(0)[:match.group(0).index('~')], match.group(0)[match.group(0).index('~') + 1:]]
             else:
                 address_type = "line"
                 address = match.group(0)
@@ -1010,6 +1011,7 @@ class GNU:
                 address[0] = len(input)
             else:
                 address[0] = int(address[0])
+            address[1] = int(address[1])
         elif address_type == "line":
             if address == '$':
                 address = len(input)
@@ -1056,7 +1058,7 @@ class GNU:
                     out.append(line)
                 # print line
                 elif command == '=':
-                    out.append(line_num)
+                    out.append(str(line_num))
                 # change
                 elif command == 'c':
                     if address_type == "range" and line_num != address[0]:
