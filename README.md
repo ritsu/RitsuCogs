@@ -111,7 +111,7 @@ Options
 
 ### Input format
 
-All GNU commands accept the same types of input. The only difference is <i>wc</i> does not parse DOM from URLs; it always treats URL resources as plain text.
+All GNU commands accept the same types of input. @chat requires the chatlog cog included in this repo.
 
 ```
 Input
