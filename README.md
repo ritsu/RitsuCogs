@@ -36,6 +36,45 @@ Input
             To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
 
+### sed
+
+<i>sed</i> is a simple stream editor
+
+```sed [options] [script] [input]```
+```
+Options
+    -g      Process entire input as a single string, rather than line by line.
+    -n      Disable automatic printing; only produce output when explicitly told to.
+
+Script Address
+    /.*/    Returns lines that match the regular expression.
+    A       Returns line number A.
+    A,B     Returns lines from A to B.
+    A~N     Returns every Nth line, starting from A
+
+Script Command
+    a...    Append after each line.
+    c...    Change lines with new line.
+    d       Delete lines.
+    i...    Insert before each line.
+    p       Print line.
+    s/././  Substitute with regular expression pattern.
+    =       Print line number.
+
+Script Pattern Flag
+    /I      Ignore case
+    /p      Print (mostly used when -n option is active)
+
+Input
+    URL     If input matches a URL pattern, will attempt to fetch URL content.
+            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
+            If -p option is set, URL content will be treated as plain text.
+    @chat   If '@chat' is specified as the input, will search in chat log.
+            Logging must be activated in the channel for this to work.
+    <input> If none of the previous inputs are detected, remaining text is treated as input.
+            To preserve whitespace (including newlines), enclose entire input in quotes.
+```
+
 ### wc
 
 <i>wc</i> counts the number of characters, whitespace-separated words, and newlines in the given input.
