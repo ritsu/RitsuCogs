@@ -43,7 +43,7 @@ Options
     -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
     
 Script Address
-    /.*/    Returns lines that match the regular expression.
+    /.../   Returns lines that match the regular expression.
     A       Returns line number A.
     A,B     Returns lines from A to B.
     A~N     Returns every Nth line, starting from A
