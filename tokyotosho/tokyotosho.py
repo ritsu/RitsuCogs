@@ -16,7 +16,8 @@ class TokyoTosho:
 
     types = {"anime": 1, "music": 2, "manga": 3, "hentai": 4, "other": 5, "raws": 7, "drama": 8, "music-video": 9, "non-english": 10, "batch": 11, "hentai-anime": 12, "hentai-manga": 13, "hentai-games": 14, "jav": 15 }
     base_url = "http://tokyotosho.info/"
-    max_search = 5
+    more_limit = 5
+    max_comment_length = 160
     max_alert = 5
     check_delay = 60
     pubdate_format = "%a, %d %b %Y %H:%M:%S %Z"
@@ -53,7 +54,6 @@ class TokyoTosho:
         # build query
         terms = ""
         type = ""
-        max_results = TokyoTosho.max_search
         for term in query:
             if term[0] == '#':
                 if type:
@@ -64,8 +64,6 @@ class TokyoTosho:
                 else:
                     await self.bot.say(term[1:] + " is not a valid type. Type !tt types to show valid types.")
                     return
-            elif term[0] == '%':
-                max_results = int(term[1:])
             elif terms:
                 terms += "+" + term
             else:
@@ -83,7 +81,7 @@ class TokyoTosho:
 
         table = soup.find("table", attrs={"class": "listing"})
         rows = table.find_all("tr")
-        result = ""
+        result = []
         count = 0
         for row in rows:
             td_link = row.find("td", attrs={"class": "desc-top"})
@@ -91,22 +89,34 @@ class TokyoTosho:
             if td_link:
                 a_link = td_link.find_all("a")[-1]
                 #await self.bot.say("**" + a_link.get_text() + "** ::\n " + a_link["href"])
-                result += "**" + a_link.get_text() + "** :: " + a_link.get("href") + "\n"
+                item = "**" + a_link.get_text() + "** :: " + a_link.get("href")
             elif td_desc:
                 desc = td_desc.get_text()
-                if len(desc) > 120:
-                    desc = desc[:117] + " ..."
+                if len(desc) > TokyoTosho.max_comment_length:
+                    desc = desc[:TokyoTosho.max_comment_length] + " ..."
                 #await self.bot.say("`" + td_desc.get_text() + "`")
-                result += desc + "\n"
+                # remove links from comment
+                desc = desc.replace("http", "h\*\*p")
+                item += "\n" + desc
+                result.append(item)
                 count += 1
-            if count >= max_results:
-                break
 
         summary = table.find_next_sibling("p")
-        result += "\n*" + summary.get_text() + "*"
-        if count >= max_results:
-            result += "\nOnly first " + str(max_results) + " results shown. For more, visit " + url
-        await self.bot.say(result)
+        result.append("*" + summary.get_text() + "*")
+
+        # display results in channel
+        lines_displayed = 0
+        for r in result:
+            # flood prevention
+            if lines_displayed > 0 and lines_displayed % TokyoTosho.more_limit == 0:
+                await self.bot.say("Type 'more' or 'm' to continue...")
+                answer = await self.bot.wait_for_message(timeout=15, author=ctx.message.author)
+                if not answer or answer.content.lower() not in ["more", "m"]:
+                    await self.bot.say("Command output stopped.")
+                    return
+            if r:
+                await self.bot.say(r)
+                lines_displayed += 1
 
     @tt.command(pass_context=True, name='add', aliases=['a'])
     async def ttadd(self, ctx, *query: str):
