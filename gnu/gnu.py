@@ -131,6 +131,7 @@ class GNU:
         #await self.bot.say("`re: " + str(search_pattern) + " - " + search + "`")
 
         # handle various types of input
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
@@ -150,6 +151,7 @@ class GNU:
                         soup = BeautifulSoup(response_text, "html.parser")
                         texts = soup.findAll(text=True)
                         input = filter(visible, texts)
+                        dom_source = True
         elif input.lower() == "@chat":
             # handle chat log input
             await self.bot.say("Sorry, @chat is not supported at this time.")
@@ -163,7 +165,10 @@ class GNU:
         found = 0
         lines_displayed = 0
         for i, line in enumerate(input):
-            #await self.bot.say(str(i) + ": " + line)
+            # strip extra whitespace and newlines from dom sources
+            if dom_source:
+                line = line.strip()
+
             # look for match
             match = search_pattern.search(line)
             if match:
@@ -402,6 +407,7 @@ class GNU:
                                "```")
             return
 
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
@@ -422,6 +428,7 @@ class GNU:
                         texts = soup.findAll(text=True)
                         input_texts = filter(visible, texts)
                         input = [line for line in input_texts]
+                        dom_source = True
         elif input.lower() == "@chat":
             # handle chat log input
             await self.bot.say("Sorry, @chat is not supported at this time.")
@@ -445,6 +452,10 @@ class GNU:
         pipe_out = []
         lines_displayed = 0
         for line in input[pos:]:
+            # strip extra whitespace and newlines from dom sources
+            if dom_source:
+                line = line.strip()
+
             # truncate messages that are too long
             if len(line) > GNU.max_message_length and not pipe:
                 line = line[:(GNU.max_message_length - 12)] + " [TRUNCATED]"
@@ -535,6 +546,7 @@ class GNU:
                                "```")
             return
 
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
@@ -554,6 +566,7 @@ class GNU:
                         soup = BeautifulSoup(response_text, "html.parser")
                         texts = soup.findAll(text=True)
                         input = filter(visible, texts)
+                        dom_source = True
         elif input.lower() == "@chat":
             # handle chat log input
             await self.bot.say("Sorry, @chat is not supported at this time.")
@@ -569,7 +582,10 @@ class GNU:
         line_n = 0
         lines_displayed = 0
         for line in input:
-            #await self.bot.say(str(i) + ": " + line)
+            # strip extra whitespace and newlines from dom sources
+            if dom_source:
+                line = line.strip()
+
             # skip line if 's' is set, previous line was empty, and this line is empty
             if 's' in option and prev_empty and not line.strip():
                 continue
@@ -686,6 +702,7 @@ class GNU:
                                "```")
             return
 
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
@@ -706,6 +723,7 @@ class GNU:
                         texts = soup.findAll(text=True)
                         input_texts = filter(visible, texts)
                         input = "\n".join([line for line in input_texts])
+                        dom_source = True
         elif input.lower() == "@chat":
             # handle chat log input
             await self.bot.say("Sorry, @chat is not supported at this time.")
@@ -728,7 +746,10 @@ class GNU:
         pipe_out = []
         lines_displayed = 0
         for line in reversed(input):
-            #await self.bot.say(str(i) + ": " + line)
+            # strip extra whitespace and newlines from dom sources
+            if dom_source:
+                line = line.strip()
+
             # truncate messages that are too long
             if len(line) > GNU.max_message_length and not pipe:
                 line = line[:(GNU.max_message_length - 12)] + " [TRUNCATED]"
@@ -921,6 +942,7 @@ class GNU:
 
         #await self.bot.say("command: " + command)
 
+        dom_source = False
         if GNU.url_pattern.match(input):
             #await self.bot.say("Querying `" + input + "`")
             async with aiohttp.ClientSession() as session:
@@ -943,6 +965,7 @@ class GNU:
                         soup = BeautifulSoup(response_text, "html.parser")
                         texts = soup.findAll(text=True)
                         input = filter(visible, texts)
+                        dom_source = True
                         if 'g' in option:
                             input_string = "\n".join([line for line in input])
                             input = [input_string]
@@ -976,6 +999,10 @@ class GNU:
         pipe_out = []
         lines_displayed = 0
         for i, line in enumerate(input):
+            # strip extra whitespace and newlines from dom sources
+            if dom_source:
+                line = line.strip()
+
             line_num = i + 1
             # determine if match
             match = False
