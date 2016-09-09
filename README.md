@@ -32,7 +32,7 @@ Output Options
 
 ### sed
 
-<i>sed</i> is a simple stream editor
+<i>sed</i> is a simple stream editor.
 
 ```sed [options] [script] [input]```
 ```
