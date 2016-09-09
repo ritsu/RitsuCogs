@@ -4,7 +4,10 @@ Some custom cogs for Red-DiscordBot
 
 ## GNU
 
-An attempt to emulate some common GNU utilities
+An attempt to emulate some common GNU utilities. Pipes are supported, for example:  
+```
+!sed "s/^.{0,20}$/ /" http://news.google.com | !grep -i apple | !sed s/apple/Orange/i | !tail -n 5
+```
 
 ### grep
 
@@ -25,15 +28,36 @@ Output Options
     -c      Suppress normal output; instead print a count of matching lines for each input file.
     -n      Prefix each line of output with its line number.
     -m num  Stop reading from input after num matching lines.
+```
 
-Input
-    URL     If input matches a URL pattern, bot will fetch URL content as input.
-            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
-            If -p option is set, URL content will be treated as plain text.
-    @chat   If '@chat' is specified as the input, will search in chat log.
-            Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as input.
-            To preserve whitespace (including newlines), enclose entire input in quotes.
+### sed
+
+<i>sed</i> is a simple stream editor.
+
+```sed [options] [script] [input]```
+```
+Options
+    -g      Process entire input as a single string, rather than line by line.
+    -n      Disable automatic printing; only produce output when explicitly told to.
+
+Script Address
+    /.*/    Returns lines that match the regular expression.
+    A       Returns line number A.
+    A,B     Returns lines from A to B.
+    A~N     Returns every Nth line, starting from A
+
+Script Command
+    a...    Append after each line.
+    c...    Change lines with new line.
+    d       Delete lines.
+    i...    Insert before each line.
+    p       Print line.
+    s/././  Substitute with regular expression pattern.
+    =       Print line number.
+
+Script Pattern Flag
+    /I      Ignore case
+    /p      Print (mostly used when -n option is active)
 ```
 
 ### wc
@@ -46,19 +70,11 @@ Options
     -m      Print only the character counts.
     -w      Print only the word counts.
     -l      Print only the newline counts.
-
-Input
-    URL     If input matches a URL pattern, will attempt to fetch URL content.
-            URL content is treated as plain text; DOM is never parsed.
-    @chat   If '@chat' is specified as the input, will search in chat log.
-            Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as input.
-            To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
 
 ### cat
 
-<i>cat</i> echoes the contents of the input
+<i>cat</i> echoes the contents of the input.
 
 ```cat [options] [input]```
 ```
@@ -67,20 +83,11 @@ Options
     -n      Number all output lines, starting with 1. This option is ignored if -b is in effect.
     -s      Suppress repeated adjacent blank lines; output just one empty line instead of several.
     -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
-
-Input
-    URL     If input matches a URL pattern, will attempt to fetch URL content.
-            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
-            If -p option is set, URL content will be treated as plain text.
-    @chat   If '@chat' is specified as the input, will search in chat log.
-            Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as input.
-            To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
 
 ### tac
 
-<i>tac</i> echoes input to output in reverse by line or user specified separator
+<i>tac</i> echoes input to output in reverse by line or user specified separator.
 
 ```tac [options] [input]```
 ```
@@ -88,20 +95,11 @@ Options
     -s sep  Use "sep" as the record separator, instead of newline.
     -r      Treat the separator string as a regular expression.
     -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
-
-Input
-    URL     If input matches a URL pattern, will attempt to fetch URL content.
-            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
-            If -p option is set, URL content will be treated as plain text.
-    @chat   If '@chat' is specified as the input, will search in chat log.
-            Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as input.
-            To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
 
 ### tail
 
-<i>tail</i> prints the last part (10 lines by default) of input
+<i>tail</i> prints the last part (10 lines by default) of input.
 
 ```tail [options] [input]```
 ```
@@ -109,9 +107,15 @@ Options
     -n [+]num   Output the last num lines. However, if num is prefixed with a '+'
                 start printing with line num from the start of input, instead of from the end.
     -p          If input is a URL, this will treat the URL content as plain text instead of a DOM
+```
 
+### Input format
+
+All GNU commands accept the same types of input. The only difference is <i>wc</i> does not parse DOM from URLs; it always treats URL resources as plain text.
+
+```
 Input
-    URL     If input matches a URL pattern, will attempt to fetch URL content.
+    URL     If input matches a URL pattern, bot will fetch URL content as input.
             By default, DOM will be parsed from URL content and text elements will be treated as "lines"
             If -p option is set, URL content will be treated as plain text.
     @chat   If '@chat' is specified as the input, will search in chat log.
