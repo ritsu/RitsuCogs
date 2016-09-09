@@ -39,7 +39,8 @@ Output Options
 Options
     -g      Process entire input as a single string, rather than line by line.
     -n      Disable automatic printing; only produce output when explicitly told to.
-
+    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
+    
 Script Address
     /.*/    Returns lines that match the regular expression.
     A       Returns line number A.
@@ -70,6 +71,7 @@ Options
     -m      Print only the character counts.
     -w      Print only the word counts.
     -l      Print only the newline counts.
+    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
 ```
 
 ### cat
