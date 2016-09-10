@@ -165,12 +165,47 @@ class GNU:
                 await self.bot.say("Output stopped.")
                 return -1
 
+        # escape comment string
+        line = line.replace("```", "\\`\\`\\`")
+
         # say line
         if comment:
             await self.bot.say("```\n{0}\n```".format(line))
         else:
             await self.bot.say(line)
         return 1
+
+    async def _pipe(self, ctx, pipe, pipe_out):
+        """ Handle pipe
+        :param ctx:       Context
+        :param pipe:      Pipe args
+        :param pipe_out:  Piped output
+        """
+        if not pipe:
+            return
+
+        # get next command
+        cmd = pipe[0]
+
+        # let's be lenient
+        if cmd[0] == ctx.prefix:
+            cmd = cmd[1:]
+
+        # check if command is valid
+        if cmd not in self.command_list.keys():
+            await self._say("{0}: command not found".format(cmd), 0, ctx.message.author, True, False)
+            return
+
+        # get function for command
+        func = getattr(GNU, self.command_list[cmd])
+
+        # invoke command
+        if len(pipe) > 1:
+            await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+        else:
+            await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+
+        return
 
     @commands.command(pass_context=True, name='grep')
     async def grep(self, ctx, *args, **kwargs):
@@ -179,7 +214,7 @@ class GNU:
         Type !grep for more information.
         """
         # display help if args is empty
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*grep* prints lines that contain a match for a pattern.")
             await self.bot.say("```grep [options] [pattern] [input]```")
             await self.bot.say("```"
@@ -373,19 +408,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
     @commands.command(pass_context=True, name='wc')
     async def wc(self, ctx, *args, **kwargs):
@@ -394,7 +417,7 @@ class GNU:
         Type !wc for more information.
         """
         # display help if args is empty
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*wc* counts the number of characters, whitespace-separated words, and newlines in the given input.")
             await self.bot.say("```wc [option] [input]```")
             await self.bot.say("```"
@@ -500,19 +523,7 @@ class GNU:
             await self._say(line, 0, ctx.message.author, True, False)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
     @commands.command(pass_context=True, name='tail')
     async def tail(self, ctx, *args, **kwargs):
@@ -521,7 +532,7 @@ class GNU:
         Type !tail for more information.
         """
         # display help if args is empty
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*tail* prints the last part (10 lines by default) of input.")
             await self.bot.say("```tail [options] [input]```")
             await self.bot.say("```"
@@ -630,19 +641,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
     @commands.command(pass_context=True, name='cat')
     async def cat(self, ctx, *args, **kwargs):
@@ -651,7 +650,7 @@ class GNU:
         Type !cat for more information.
         """
         # display help if args is empty
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*cat* echoes the contents of the input.")
             await self.bot.say("```cat [options] [input]```")
             await self.bot.say("```"
@@ -770,19 +769,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
     @commands.command(pass_context=True, name='tac')
     async def tac(self, ctx, *args, **kwargs):
@@ -791,7 +778,7 @@ class GNU:
         Type !tac for more information.
         """
         # display help if args is empty
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*tac* echoes input to output in reverse by line or user specified separator.")
             await self.bot.say("```tac [options] [input]```")
             await self.bot.say("```"
@@ -898,19 +885,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
     @commands.command(pass_context=True, name='sed')
     async def sed(self, ctx, *args, **kwargs):
@@ -918,7 +893,7 @@ class GNU:
 
         Type !sed for more information.
         """
-        if not args:
+        if not args and "pipe_in" not in kwargs:
             await self.bot.say("*sed* is a simple stream editor.")
             await self.bot.say("```sed [options] [script] [input]```")
             await self.bot.say("```"
@@ -1011,10 +986,14 @@ class GNU:
             address_type = "regex"
             match = re.compile(r"^/(.*?)/(?<!\\/)i?", re.IGNORECASE).match(script)
             # get regex for address range
-            if match.group(0)[-1].lower() == 'i':
-                address = re.compile(r"{0}".format(match.group(1)), re.IGNORECASE)
-            else:
-                address = re.compile(r"{0}".format(match.group(1)))
+            try:
+                if match.group(0)[-1].lower() == 'i':
+                    address = re.compile(r"{0}".format(match.group(1)), re.IGNORECASE)
+                else:
+                    address = re.compile(r"{0}".format(match.group(1)))
+            except:
+                await self._say("Error trying to create substitution pattern: `{0}`".format(match.group(1)), 0, ctx.message.author, False, False)
+                return
             # shift script
             script = script[match.end():]
         elif re.compile(r"^[$\d]").match(script):
@@ -1047,33 +1026,33 @@ class GNU:
         script = script.strip()
         command = script[0]
         if command not in sed_commands:
-            await self.bot.say("Unknown command: `{0}`".format(command))
+            await self._say("Unknown command: `{0}`".format(command), 0, ctx.message.author, False, False)
             return
 
         if command in ('a', 'c', 'i', 's'):
             if len(script) < 2:
-                await self.bot.say("Expected characters after: `{0}`".format(command))
+                await self._say("Expected characters after: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
             acis_line = script[1:]
         elif command == 'd':
             if len(script) > 1:
-                await self.bot.say("Extra characters after command: `{0}`".format(command))
+                await self._say("Extra characters after command: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
         elif command == 'p':
             if len(script) > 1:
-                await self.bot.say("Extra characters after command: `{0}`".format(command))
+                await self._say("Extra characters after command: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
 
         if command == 's':
             if acis_line[0] != '/' or acis_line.count('/') < 3:
-                await self.bot.say("Unknown substitution pattern: `{0}`".format(acis_line))
+                await self._say("Unknown substitution pattern: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
             sub = re.compile(r"^(.*?)/(?<!\\/)(.*?)/(?<!\\/)(.*)").match(acis_line[1:])
             if len(sub.groups()) != 3:
-                await self.bot.say("Unknown substitution pattern: `{0}`".format(acis_line))
+                await self._say("Unknown substitution pattern: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
             if sub.groups()[2].lower() not in ("i", "p", ""):
-                await self.bot.say("Unrecognized pattern flag: `{0}`".format(sub.groups()[2]))
+                await self._say("Unrecognized pattern flag: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
             sub_flag = sub.groups()[2].lower()
             sub_replace = sub.groups()[1]
@@ -1083,11 +1062,11 @@ class GNU:
                 else:
                     sub_search = re.compile(sub.groups()[0], re.IGNORECASE)
             except:
-                await self.bot.say("Error trying to create substitution pattern: `{0}`".format(sub.groups()[0]))
+                await self._say("Error trying to create substitution pattern: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
         elif command == '=':
             if len(script) > 1:
-                await self.bot.say("Extra characters after command: `{0}`".format(command))
+                await self._say("Extra characters after command: `{0}`".format(command), 0, ctx.message.author, False, False)
                 return
 
         #await self.bot.say("command: " + command)
@@ -1253,19 +1232,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        if pipe:
-            cmd = pipe[0]
-            if cmd[0] != ctx.prefix:
-                await self.bot.say("```{0}: command prefix missing```".format(cmd))
-                return
-            elif cmd[1:] not in self.command_list.keys():
-                await self.bot.say("```{0}: command not found```".format(cmd))
-                return
-            func = getattr(GNU, self.command_list[cmd[1:]])
-            if len(pipe) > 1:
-                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-            else:
-                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
+        await self._pipe(ctx, pipe, pipe_out)
 
 
 def setup(bot):
