@@ -38,6 +38,21 @@ class GNU:
         # buffered output {author:[lines], ...}
         self.buffer = {}
 
+        self.help_options = (
+            "\n\t-p       If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
+            "\n\t-@       Same as -p except source is not passed through BeautifulSoup's prettify()."
+            "\n\t-%       Print each line as a separate message; more likely to hit Discord's 5/5 rate limit.")
+
+        self.help_input = (
+            "\n\nInput"
+            "\n\tURL      If input matches a URL pattern, bot will fetch URL content as input."
+            "\n\t         By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
+            "\n\t         If -p option is set, URL content will be treated as plain text."
+            "\n\t@chat    If '@chat' is specified as the input, will search in chat log."
+            "\n\t         Logging must be activated in the channel for this to work."
+            "\n\t<input>  If none of the previous inputs are detected, remaining text is treated as input."
+            "\n\t         To preserve whitespace (including newlines), enclose entire input in quotes.")
+
     async def _get_url(self, url: str, fmt: str):
         """ Returns content from url resource
         :param url:    valid url string
@@ -219,29 +234,19 @@ class GNU:
             await self.bot.say("```grep [options] [pattern] [input]```")
             await self.bot.say("```"
                                "\nMatching Options"
-                               "\n\t-i      Ignore case distinctions, so that characters that differ only in case match each other."
-                               "\n\t-w      Select only those lines containing matches that form whole words."
-                               "\n\t-v      Invert the sense of matching, to select non-matching lines."
-                               "\n\t-r      Treats search string as a regex pattern; other Matching Options are ignored."
-                               "\n\nInput Options"
-                               "\n\t-p      If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@      Same as -p except source is not passed through BeautifulSoup's prettify()."
+                               "\n\t-i       Ignore case distinctions, so that characters that differ only in case match each other."
+                               "\n\t-w       Select only those lines containing matches that form whole words."
+                               "\n\t-v       Invert the sense of matching, to select non-matching lines."
+                               "\n\t-r       Treats search string as a regex pattern; other Matching Options are ignored."
                                "\n\nOutput Options"
-                               "\n\t-c      Suppress normal output; instead print a count of matching lines for each input file."
-                               "\n\t-n      Prefix each line of output with its line number."
-                               "\n\t-m num  Stop reading from input after num matching lines."
-                               "\n\t-A num  Print num lines of trailing context after matching lines."
-                               "\n\t-B num  Print num lines of leading context before matching lines."
-                               "\n\t-C num  Print num lines of leading and trailing context."
-                               "\n\t-%      Print each line as a separate message; more likely to hit discord's 5/5 rate limit."
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, bot will fetch URL content as input."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t-c       Suppress normal output; instead print a count of matching lines for each input file."
+                               "\n\t-n       Prefix each line of output with its line number."
+                               "\n\t-m num   Stop reading from input after num matching lines."
+                               "\n\t-A num   Print num lines of trailing context after matching lines."
+                               "\n\t-B num   Print num lines of leading context before matching lines."
+                               "\n\t-C num   Print num lines of leading and trailing context."
+                               "\n\nOther Options"
+                               + self.help_options + self.help_input +
                                "```")
             return
 
@@ -422,19 +427,10 @@ class GNU:
             await self.bot.say("```wc [option] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-m      Print only the character counts."
-                               "\n\t-w      Print only the word counts."
-                               "\n\t-l      Print only the newline counts."
-                               "\n\t-p      If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@      Same as -p except source is not passed through BeautifulSoup's prettify()."
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t-m       Print only the character counts."
+                               "\n\t-w       Print only the word counts."
+                               "\n\t-l       Print only the newline counts."
+                               + self.help_options + self.help_input +
                                "```")
             return
 
@@ -537,19 +533,9 @@ class GNU:
             await self.bot.say("```tail [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-n [+]num   Output the last num lines. However, if num is prefixed with a '+',"
-                               "\n\t            start printing with line num from the start of input, instead of from the end."
-                               "\n\t-p          If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@          Same as -p except source is not passed through BeautifulSoup's prettify()."
-                               "\n\t-%          Print each line as a separate message; more likely to hit discord's 5/5 rate limit."
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t-n [+]N  Output the last N lines. However, if N is prefixed with a '+',"
+                               "\n\t         start printing with line N from the start of input, instead of from the end."
+                               + self.help_options + self.help_input +
                                "```")
             return
 
@@ -655,20 +641,10 @@ class GNU:
             await self.bot.say("```cat [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-b      Number all nonempty output lines, starting with 1."
-                               "\n\t-n      Number all output lines, starting with 1. This option is ignored if -b is in effect."
-                               "\n\t-s      Suppress repeated adjacent blank lines; output just one empty line instead of several."
-                               "\n\t-p      If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@      Same as -p except source is not passed through BeautifulSoup's prettify()."
-                               "\n\t-%      Print each line as a separate message; more likely to hit discord's 5/5 rate limit."
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t-b       Number all nonempty output lines, starting with 1."
+                               "\n\t-n       Number all output lines, starting with 1. This option is ignored if -b is in effect."
+                               "\n\t-s       Suppress repeated adjacent blank lines; output just one empty line instead of several."
+                               + self.help_options + self.help_input +
                                "```")
             return
 
@@ -783,19 +759,9 @@ class GNU:
             await self.bot.say("```tac [options] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-s sep  Use \"sep\" as the record separator, instead of newline."
-                               "\n\t-r      Treat the separator string as a regular expression."
-                               "\n\t-p      If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@      Same as -p except source is not passed through BeautifulSoup's prettify()."
-                               "\n\t-%      Print each line as a separate message; more likely to hit discord's 5/5 rate limit."
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t-s sep   Use \"sep\" as the record separator, instead of newline."
+                               "\n\t-r       Treat the separator string as a regular expression."
+                               + self.help_options + self.help_input +
                                "```")
             return
 
@@ -898,35 +864,26 @@ class GNU:
             await self.bot.say("```sed [options] [script] [input]```")
             await self.bot.say("```"
                                "\nOptions"
-                               "\n\t-g      Process entire input as a single string, rather than line by line."
-                               "\n\t-n      Disable automatic printing; only produce output when explicitly told to."
-                               "\n\t-p      If input is a URL, this will treat the URL content as (prettified) html instead of a DOM."
-                               "\n\t-@      Same as -p except source is not passed through BeautifulSoup's prettify()."
-                               "\n\t-%      Print each line as a separate message; more likely to hit discord's 5/5 rate limit."
+                               "\n\t-g       Process entire input as a single string, rather than line by line."
+                               "\n\t-n       Disable automatic printing; only produce output when explicitly told to."
+                               + self.help_options +
                                "\n\nScript Address"
-                               "\n\t/.../   Returns lines that match the regular expression."
-                               "\n\tA       Returns line number A."
-                               "\n\tA,B     Returns lines from A to B."
-                               "\n\tA~N     Returns every Nth line, starting from A"
+                               "\n\t/.../    Returns lines that match the regular expression."
+                               "\n\tA        Returns line number A."
+                               "\n\tA,B      Returns lines from A to B."
+                               "\n\tA~N      Returns every Nth line, starting from A"
                                "\n\nScript Command"
-                               "\n\ta...    Append after each line."
-                               "\n\tc...    Change lines with new line."
-                               "\n\td       Delete lines."
-                               "\n\ti...    Insert before each line."
-                               "\n\tp       Print line."
-                               "\n\ts/././  Substitute with regular expression pattern."
-                               "\n\t=       Print line number."
+                               "\n\ta...     Append after each line."
+                               "\n\tc...     Change lines with new line."
+                               "\n\td        Delete lines."
+                               "\n\ti...     Insert before each line."
+                               "\n\tp        Print line."
+                               "\n\ts/././   Substitute with regular expression pattern."
+                               "\n\t=        Print line number."
                                "\n\nScript Pattern Flag"
-                               "\n\t/i      Ignore case"
-                               "\n\t/p      Print (mostly used when -n option is active)"
-                               "\n\nInput"
-                               "\n\tURL     If input matches a URL pattern, will attempt to fetch URL content."
-                               "\n\t        By default, DOM will be parsed from URL content and text elements will be treated as \"lines\""
-                               "\n\t        If -p option is set, URL content will be treated as plain text."
-                               "\n\t@chat   If '@chat' is specified as the input, will search in chat log."
-                               "\n\t        Logging must be activated in the channel for this to work."
-                               "\n\t<input> If none of the previous inputs are detected, remaining text is treated as input."
-                               "\n\t        To preserve whitespace (including newlines), enclose entire input in quotes."
+                               "\n\t/i       Ignore case"
+                               "\n\t/p       Print (mostly used when -n option is active)"
+                               + self.help_input +
                                "```")
             return
 
