@@ -37,7 +37,17 @@ class TokyoTosho:
         """TokyoTosho search and RSS alerts"""
 
         if ctx.invoked_subcommand is None:
-            await self.bot.say("Type help tt for info.")
+            await self.bot.say("```"
+                               "\nTokyoTosho search and RSS alerts"
+                               "\n\nCommands:"
+                               "\n\tlist    List current RSS alerts"
+                               "\n\tremove  Remove an RSS alert"
+                               "\n\tcheck   Check current RSS alerts against RSS feed"
+                               "\n\ttypes   Show valid types/categories"
+                               "\n\tadd     Add an RSS alert for new torrents on TokyoTosho"
+                               "\n\tsearch  Search TokyoTosho and display results"
+                               "\n\nType !help command for more info on a command."
+                               "```")
 
     @tt.command(pass_context=True, name='search', aliases=['s'])
     async def ttsearch(self, ctx, *query: str):
