@@ -17,18 +17,18 @@ An attempt to emulate some common GNU utilities. Pipes are supported, for exampl
 ```grep [options] [pattern] [input]```
 ```
 Matching Options
-    -i      Ignore case distinctions, so that characters that differ only in case match each other.
-    -w      Select only those lines containing matches that form whole words.
-    -v      Invert the sense of matching, to select non-matching lines.
-    -r      Treats search string as a regex pattern; other Matching Options are ignored.
-
-Input Options
-    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
+    -i       Ignore case distinctions, so that characters that differ only in case match each other.
+    -w       Select only those lines containing matches that form whole words.
+    -v       Invert the sense of matching, to select non-matching lines.
+    -r       Treats search string as a regex pattern; other Matching Options are ignored.
 
 Output Options
-    -c      Suppress normal output; instead print a count of matching lines for each input file.
-    -n      Prefix each line of output with its line number.
-    -m num  Stop reading from input after num matching lines.
+    -c       Suppress normal output; instead print a count of matching lines for each input file.
+    -n       Prefix each line of output with its line number.
+    -m num   Stop reading from input after num matching lines.
+    -A num   Print num lines of trailing context after matching lines.
+    -B num   Print num lines of leading context before matching lines.
+    -C num   Print num lines of leading and trailing context.
 ```
 
 ### sed
@@ -38,28 +38,27 @@ Output Options
 ```sed [options] [script] [input]```
 ```
 Options
-    -g      Process entire input as a single string, rather than line by line.
-    -n      Disable automatic printing; only produce output when explicitly told to.
-    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
-    
+    -g       Process entire input as a single string, rather than line by line.
+    -n       Disable automatic printing; only produce output when explicitly told to.
+
 Script Address
-    /.../   Returns lines that match the regular expression.
-    A       Returns line number A.
-    A,B     Returns lines from A to B.
-    A~N     Returns every Nth line, starting from A
+    /.../    Returns lines that match the regular expression.
+    A        Returns line number A.
+    A,B      Returns lines from A to B.
+    A~N      Returns every Nth line, starting from A
 
 Script Command
-    a...    Append after each line.
-    c...    Change lines with new line.
-    d       Delete lines.
-    i...    Insert before each line.
-    p       Print line.
-    s/././  Substitute with regular expression pattern.
-    =       Print line number.
+    a...     Append after each line.
+    c...     Change lines with new line.
+    d        Delete lines.
+    i...     Insert before each line.
+    p        Print line.
+    s/././   Substitute with regular expression pattern.
+    =        Print line number.
 
 Script Pattern Flag
-    /I      Ignore case
-    /p      Print (mostly used when -n option is active)
+    /i       Ignore case
+    /p       Print (mostly used when -n option is active)
 ```
 
 ### wc
@@ -72,7 +71,6 @@ Options
     -m      Print only the character counts.
     -w      Print only the word counts.
     -l      Print only the newline counts.
-    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
 ```
 
 ### cat
@@ -85,7 +83,6 @@ Options
     -b      Number all nonempty output lines, starting with 1.
     -n      Number all output lines, starting with 1. This option is ignored if -b is in effect.
     -s      Suppress repeated adjacent blank lines; output just one empty line instead of several.
-    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
 ```
 
 ### tac
@@ -97,7 +94,6 @@ Options
 Options
     -s sep  Use "sep" as the record separator, instead of newline.
     -r      Treat the separator string as a regular expression.
-    -p      If input is a URL, this will treat the URL content as plain text instead of a DOM
 ```
 
 ### tail
@@ -109,14 +105,18 @@ Options
 Options
     -n [+]num   Output the last num lines. However, if num is prefixed with a '+'
                 start printing with line num from the start of input, instead of from the end.
-    -p          If input is a URL, this will treat the URL content as plain text instead of a DOM
 ```
 
-### Input format
+### Input Format and Global Options
 
-All GNU commands accept the same types of input. @chat requires the chatlog cog included in this repo.
+All GNU commands accept the same types of input. @chat requires the chatlog cog included in this repo. There are a few global options that apply to input and output.
 
 ```
+Global Options
+    -p       If input is a URL, this will treat the URL content as (prettified) html instead of a DOM.
+    -@       Same as -p except source is not passed through BeautifulSoup's prettify().
+    -%       Print each line as a separate message; more likely to hit Discord's 5/5 rate limit.
+
 Input
     URL     If input matches a URL pattern, bot will fetch URL content as input.
             By default, DOM will be parsed from URL content and text elements will be treated as "lines"
@@ -131,7 +131,7 @@ Input
 
 ### Get search results in your discord channel
 
-`!tt search <terms> <#type>`
+`!tt search [terms] [#type]`
 
 <b>terms</b> are normal searech terms. Prepend a "-" for exclusion terms.  
 <b>type</b> (optional) is one of the types/categories defined on TokyoTosho. Type `!tt types` to see a list of valid types.
@@ -140,7 +140,7 @@ Example: `!tt search madoka rebellion -dub #anime`
 
 ### Show RSS alerts in your discord channel
 
-`!tt add <terms> <#types>`
+`!tt add [terms] [#types]`
 
 Adds an alert to your channel. The bot will display torrent name and link when a new torrent matching the configured <b>terms</b> and <b>types</b> (optional) appears in TokyoTosho's RSS feed. Note you can specify multiple types for RSS alerts.
 
@@ -154,15 +154,15 @@ Lists existing alerts configured for your channel.
 
 `!tt check`
 
-Checks existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, so old items will not appear.
+Checks existing alerts against the current RSS feed. The latest (1) item will be returned for each alert. The RSS feed only contains the last 150 items, so old items will not appear.
 
-`!tt remove <terms> <#types>`
+`!tt remove [terms] [#types]`
 
 Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
 
 ### Config options
 
-`!tt set`
+`!tt set [option] [value]`
 
 Sets various options
 
