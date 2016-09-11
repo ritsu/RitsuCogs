@@ -159,3 +159,15 @@ Checks existing alerts against the current RSS feed. The RSS feed only contains 
 `!tt remove <terms> <#types>`
 
 Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
+
+### Config options
+
+`!tt set`
+
+Sets various options
+
+- `check_interval` Number of seconds between RSS updates
+- `comment_length` Max length of search result and RSS feed comments
+- `ignore` List of categories that are ignored in all search and RSS alerts
+- `items_per_message` Max number of items the bot will mention in one message
+
