@@ -1,6 +1,7 @@
 from discord.ext import commands
 import re
 import aiohttp
+from cogs.utils import checks
 
 try: # check if BeautifulSoup4 is installed
 	from bs4 import BeautifulSoup
@@ -10,6 +11,9 @@ except:
 
 class GNU:
     """Some unix-like utilities"""
+
+    # TODO: pastebin integration for redirect output
+    # TODO: chat log input
 
     def __init__(self, bot):
         self.bot = bot
@@ -318,8 +322,6 @@ class GNU:
             search = re.escape(search)
             if 'w' in option:
                 search = "\\b" + search + "\\b"
-            if 'v' in option:
-                search = "^((?!" + search + ").)*$"
             if 'i' in option:
                 search_pattern = re.compile(r"{0}".format(search), re.IGNORECASE)
             else:
@@ -354,7 +356,9 @@ class GNU:
         for i, line in enumerate(input):
             # look for match
             match = search_pattern.search(line)
-            if not match:
+            if 'v' in option and match:
+                continue
+            elif 'v' not in option and not match:
                 continue
             # record match
             match_count += 1
