@@ -1,4 +1,5 @@
 from discord.ext import commands
+from cogs.utils.chat_formatting import *
 from cogs.utils.dataIO import dataIO
 from cogs.utils import checks
 import os
@@ -70,7 +71,7 @@ class TokyoTosho:
 
         # Echo current config if no args
         if not args:
-            await self.bot.say("Current config:\n```{0}```".format(str(self.config).replace("`", "\`")))
+            await self.bot.say("Current config:\n```{0}```".format(self.sanitize(str(self.config), "box")))
             return
 
         # Make sure key is valid
@@ -85,7 +86,7 @@ class TokyoTosho:
             value = self.config[key]
             if isinstance(value, list):
                 value = " ".join(value)
-            await self.bot.say("Current {0}: `{1}`".format(key, str(value).replace("`", "\`")))
+            await self.bot.say("Current {0}: `{1}`".format(key, self.sanitize(str(value), "inline")))
             return
         elif key in ("check_interval", "items_per_message", "comment_length"):
             value = int(args[1])
@@ -102,7 +103,7 @@ class TokyoTosho:
         # Echo new option and value
         if isinstance(value, list):
             value = " ".join(value)
-        await self.bot.say("{0} is now `{1}`".format(key, str(value).replace("`", "\`")))
+        await self.bot.say("{0} is now `{1}`".format(key, self.sanitize(str(value), "inline")))
 
         return
 
@@ -191,7 +192,7 @@ class TokyoTosho:
             pass
 
         # display results in channel
-        await self.bot.say("{0} results from `{1}`".format(count, url.replace("`", "\`")))
+        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(url), "inline"))
         step = self.config["items_per_message"]
         messages = [result[i:i+step] for i in range(0, len(result), step)]
         for i, message in enumerate(messages):
@@ -258,12 +259,13 @@ class TokyoTosho:
                 else:
                     self.alerts[i]["CHANNELS"].append(ctx.message.channel.id)
                     dataIO.save_json(self.alert_path, self.alerts)
+                    category = [k for k, v in self.cats.items() if str(v) in cat]
                     await self.bot.say(
                         "Alert has been added to this channel with the following options:\n"
                         "```"
-                        "\n{0:<13}: {1}".format("Search Terms", " ".join(include).replace("`", "\`")) +
-                        "\n{0:<13}: {1}".format("Exclude Terms", " ".join(exclude).replace("`", "\`")) +
-                        "\n{0:<13}: {1}".format("Categories"," ".join([k for k, v in self.cats.items() if str(v) in cat]).replace("`", "\`")) +
+                        "\n{0:<13}: {1}".format("Search Terms", self.sanitize(" ".join(include), "box")) +
+                        "\n{0:<13}: {1}".format("Exclude Terms", self.sanitize(" ".join(exclude), "box")) +
+                        "\n{0:<13}: {1}".format("Categories", self.sanitize(" ".join(category), "box")) +
                         "```"
                     )
                     return
@@ -275,12 +277,13 @@ class TokyoTosho:
                             "EXCLUDE": list(exclude),
                             "CATEGORY": list(cat)})
         dataIO.save_json(self.alert_path, self.alerts)
+        category = [k for k, v in self.cats.items() if str(v) in cat]
         await self.bot.say(
             "Alert has been added to this channel with the following options:\n"
             "```"
-            "\n{0:<13}: {1}".format("Search Terms", " ".join(include).replace("`", "\`")) +
-            "\n{0:<13}: {1}".format("Exclude Terms", " ".join(exclude).replace("`", "\`")) +
-            "\n{0:<13}: {1}".format("Categories", " ".join([k for k, v in self.cats.items() if str(v) in cat]).replace("`", "\`")) +
+            "\n{0:<13}: {1}".format("Search Terms", self.sanitize(" ".join(include), "box")) +
+            "\n{0:<13}: {1}".format("Exclude Terms", self.sanitize(" ".join(exclude), "box")) +
+            "\n{0:<13}: {1}".format("Categories", self.sanitize(" ".join(category), "box")) +
             "```"
         )
         return
@@ -345,10 +348,11 @@ class TokyoTosho:
         count = 0
         for i, alert in enumerate(self.alerts):
             if ctx.message.channel.id in alert["CHANNELS"]:
+                category = ['#'+k for k, v in self.cats.items() if str(v) in alert["CATEGORY"]]
                 await self.bot.say("```{0} {1} {2}```".format(
-                    " ".join(alert["INCLUDE"]).replace("`", "\`"),
-                    " ".join(alert["EXCLUDE"]).replace("`", "\`"),
-                    " ".join(['#'+k for k, v in self.cats.items() if str(v) in alert["CATEGORY"]]).replace("`", "\`")
+                    self.sanitize(" ".join(alert["INCLUDE"]), "box"),
+                    self.sanitize(" ".join(alert["EXCLUDE"]), "box"),
+                    self.sanitize(" ".join(category), "box")
                 ))
                 count += 1
 
@@ -378,10 +382,11 @@ class TokyoTosho:
             msg = []
             if ctx.message.channel.id in alert["CHANNELS"]:
                 count += 1
+                category = ['#'+k for k, v in self.cats.items() if str(v) in alert["CATEGORY"]]
                 msg.append("```{0} {1} {2}```".format(
-                    " ".join(alert["INCLUDE"]).replace("`", "\`"),
-                    " ".join(alert["EXCLUDE"]).replace("`", "\`"),
-                    " ".join(['#'+k for k, v in self.cats.items() if str(v) in alert["CATEGORY"]]).replace("`", "\`")
+                    self.sanitize(" ".join(alert["INCLUDE"]), "box"),
+                    self.sanitize(" ".join(alert["EXCLUDE"]), "box"),
+                    self.sanitize(" ".join(category))
                 ))
                 include = set(alert["INCLUDE"])
                 exclude = set([term[1:] for term in alert["EXCLUDE"]])
@@ -538,7 +543,8 @@ class TokyoTosho:
                         if channel_obj and can_speak:
                             await self.bot.send_message(
                                 self.bot.get_channel(channel),
-                                "TokyoTosho RSS alert:\n" + "\n".join(msg))
+                                "TokyoTosho RSS alert:\n{0}".format("\n".join(msg))
+                            )
 
                 # Update LAST_PUBDATE
                 if new_pubdate:
@@ -552,6 +558,14 @@ class TokyoTosho:
         # end while loop
     # end rss_checker
 
+    def sanitize(self, s: str, type: str) -> str:
+        """Sanitize discord message"""
+        if type == "plain":
+            return escape_mass_mentions(s)
+        elif type == "inline":
+            return s.replace("`", "'")
+        elif type == "box":
+            return s.replace("```", "'''")
 
 def check_folders():
     if not os.path.exists(TokyoTosho.base_dir):
