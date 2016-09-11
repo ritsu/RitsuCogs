@@ -392,6 +392,9 @@ class TokyoTosho:
                 for item in items:
                     match = True
                     title = item.find("title").get_text()
+                    # Skip ignored categories
+                    if item.find("category").get_text().lower() in self.config["ignore"]:
+                        continue
                     for term in include:
                         if term.lower() not in title.lower():
                             match = False
@@ -410,6 +413,7 @@ class TokyoTosho:
                         match = False
                     if not match:
                         continue
+
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
                     description = " | ".join([description[1], description[2], description[4]])
@@ -472,9 +476,12 @@ class TokyoTosho:
                 msg = []
                 for item in items:
                     match = True
+                    # Skip ignored categories
+                    if item.find("category").get_text().lower() in self.config["ignore"]:
+                        continue
 
                     # Skip items that are older than the last alerted item (assume rss is sorted by date, newest first)
-                    pubdate = item.find("pubDate").get_text()
+                    pubdate = item.find("pubdate").get_text()
                     if last_pubdate and datetime.strptime(last_pubdate, self.pubdate_format) >= datetime.strptime(pubdate, self.pubdate_format):
                         break
 
