@@ -2,5 +2,5 @@
     "AUTHOR" : "kagami#6142",
     "NAME" : "GNU",
     "SHORT" : "Some GNU utilities",
-    "DESCRIPTION" : "An attempt to emulate some common GNU utilities. Supports pipes (e.g. !grep -i google http://news.google.com | !wc)"
+    "DESCRIPTION" : "An attempt to emulate some common GNU utilities.\nYou can pipe (e.g. !grep -i google http://news.google.com | !wc)\nYou can redirect output to pastebin (e.g. !cat @chat > chatlog)\nPastebin API key is required for pastebin redirect. Set it with !pastebin [api_key]."
 }
