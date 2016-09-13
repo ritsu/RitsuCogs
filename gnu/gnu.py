@@ -20,8 +20,6 @@ class GNU:
     base_dir = os.path.join("data", "gnu")
     config_path = os.path.join(base_dir, "config.json")
 
-    # TODO: pastebin integration for redirect output
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -46,12 +44,12 @@ class GNU:
 
         # used to match url input
         self.url_pattern = re.compile(
-            r'^(?:http|ftp)s?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-            r'localhost|'  # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-            r'(?::\d+)?'  # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            r"^(?:http|ftp)s?://"  # http:// or https://
+            r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+            r"localhost|"  # localhost...
+            r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+            r"(?::\d+)?"  # optional port
+            r"(?:/?|[/?]\S+)$", re.IGNORECASE)
 
         # buffered output {author:[lines], ...}
         self.buffer = {}
@@ -118,6 +116,33 @@ class GNU:
                 for o in opt[:]:
                     option.add(o)
                 option.remove(opt)
+
+    def _get_redirect(self, stdin: list):
+        """Set redirect if specified, removes redirect from stdin if found
+
+        :return:  None - Discord
+                  List - [api_paste_name, api_paste_expire_date]
+        """
+        if len(stdin) > 1 and stdin[-2] == ">>":
+            # Permanent pastebin
+            redirect = {"api_paste_name": stdin.pop(), "api_paste_expire_date": "N"}
+            stdin.pop()
+            return redirect
+        elif len(stdin) > 1 and stdin[-2] == ">":
+            # Temporary pastebin
+            redirect = {"api_paste_name": stdin.pop(), "api_paste_expire_date": "1D"}
+            stdin.pop()
+            return redirect
+        elif len(stdin) > 0 and len(stdin[-1]) > 2 and stdin[-1][0:2] == ">>":
+            # Permanent pastebin
+            redirect = {"api_paste_name": stdin.pop()[2:], "api_paste_expire_date": "N"}
+            return redirect
+        elif len(stdin) > 0 and len(stdin[-1]) > 1 and stdin[-1][0] == ">":
+            # Permanent pastebin
+            redirect = {"api_paste_name": stdin.pop()[1:], "api_paste_expire_date": "1D"}
+            return redirect
+
+        return None
 
     async def _flush_buffer(self, count, author, comment, buffer, say):
         """Flush buffer
@@ -210,37 +235,51 @@ class GNU:
             await self.bot.say(line)
         return 1
 
-    async def _pipe(self, ctx, pipe, pipe_out):
-        """ Handle pipe
+    async def _pipe(self, ctx, pipe, pipe_out, redirect):
+        """ Handle pipe and redirect
         :param ctx:       Context
         :param pipe:      Pipe args
         :param pipe_out:  Piped output
+        :param redirect:  Redirect setting
         """
-        if not pipe:
+        # if pipe exists, invoke pipe
+        if pipe:
+            # get next command
+            cmd = pipe[0]
+            # let's be lenient
+            if cmd[0] == ctx.prefix:
+                cmd = cmd[1:]
+            # check if command is valid
+            if cmd not in self.command_list.keys():
+                await self._say("{0}: command not found".format(cmd), 0, ctx.message.author, True, False)
+                return
+            # get function for command
+            func = getattr(GNU, self.command_list[cmd])
+            # invoke command
+            if len(pipe) > 1:
+                await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
+            else:
+                await ctx.invoke(func, pipe_in="\n".join(pipe_out))
             return
-
-        # get next command
-        cmd = pipe[0]
-
-        # let's be lenient
-        if cmd[0] == ctx.prefix:
-            cmd = cmd[1:]
-
-        # check if command is valid
-        if cmd not in self.command_list.keys():
-            await self._say("{0}: command not found".format(cmd), 0, ctx.message.author, True, False)
+        elif redirect:
+            # return if output is empty
+            if not pipe_out:
+                await self._say("No output", 0, ctx.message.author, False, False)
+                return
+            # post to pastebin
+            data = {"api_dev_key": self.config["pastebin_api_key"],
+                    "api_option": "paste",
+                    "api_paste_code": "\n".join(pipe_out),
+                    "api_paste_name": redirect["api_paste_name"],
+                    "api_paste_expire_date": redirect["api_paste_expire_date"]}
+            url = "http://pastebin.com/api/api_post.php"
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, data=data, headers={"User-Agent": "Red-DiscordBot"}) as response:
+                    response_text = await response.text()
+                    #response_text = response_text.replace("http://pastebin.com/", "http://pastebin.com/raw/")
+                    await self._say("Output to pastebin with the following result: {0}".format(response_text),
+                                    0, ctx.message.author, False, False)
             return
-
-        # get function for command
-        func = getattr(GNU, self.command_list[cmd])
-
-        # invoke command
-        if len(pipe) > 1:
-            await ctx.invoke(func, *pipe[1:], pipe_in="\n".join(pipe_out))
-        else:
-            await ctx.invoke(func, pipe_in="\n".join(pipe_out))
-
-        return
 
     async def _get_chat(self, ctx):
         """Get chat log"""
@@ -267,6 +306,27 @@ class GNU:
         with open(file, encoding="utf-8", mode='r') as f:
             log = f.read()
         return log
+
+
+    @commands.command(pass_context=True, name='pastebin')
+    @checks.admin_or_permissions()
+    async def pastebin(self, ctx, *args):
+        """Set pastebin API key
+
+        This is required to redirect output to pastebin for commands like:
+
+        cat something interesting > mypaste
+        """
+
+        if not args:
+            await self.bot.say("Please specify a key.")
+            return
+
+        key = args[0].strip()
+        self.config["pastebin_api_key"] = key
+        dataIO.save_json(self.config_path, self.config)
+        await self.bot.say("Pastebin API key saved.")
+        return
 
     @commands.command(pass_context=True, name='clog')
     @checks.admin_or_permissions()
@@ -383,7 +443,7 @@ class GNU:
         search = ""
         stdin = []
         option = set()
-        option_num = {"m": 0, "A": 0, "B": 0, "C": 0}
+        option_num = {'m': 0, 'A': 0, 'B': 0, 'C': 0}
         pipe = []
         iterator = args.__iter__()
         for arg in iterator:
@@ -407,8 +467,16 @@ class GNU:
                 search = arg
             else:
                 stdin.append(arg)
-        stdin = " ".join(stdin)
         self._split_option(option)
+
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
+
+        # Prepare stdin
+        stdin = " ".join(stdin)
 
         # set buffer flag
         if '%' in option:
@@ -417,7 +485,7 @@ class GNU:
             buffer = True
 
         # set pipe_out
-        if pipe:
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -544,7 +612,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     @commands.command(pass_context=True, name='wc')
     async def wc(self, ctx, *args, **kwargs):
@@ -579,13 +647,21 @@ class GNU:
                 option.add(arg[1:])
             else:
                 stdin.append(arg)
-        stdin = " ".join(stdin)
         self._split_option(option)
 
-        # no point in using buffer for wc
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
 
-        # set pipe_out
-        if pipe:
+        # Prepare stdin
+        stdin = " ".join(stdin)
+
+        # No point in using buffer for wc
+
+        # Set pipe_out
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -642,14 +718,14 @@ class GNU:
             hr = "-" * 30
             data = "{0:<10}{1:<10}{2:<10}".format(chars, words, lines)
 
-        if pipe:
+        if pipe or redirect:
             pipe_out = [header, hr, data]
         else:
             line = "\n".join([header, hr, data])
             await self._say(line, 0, ctx.message.author, True, False)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     @commands.command(pass_context=True, name='tail')
     async def tail(self, ctx, *args, **kwargs):
@@ -685,17 +761,25 @@ class GNU:
                     option_num = next(iterator)
             else:
                 stdin.append(arg)
-        stdin = " ".join(stdin)
         self._split_option(option)
 
-        # set buffer flag
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
+
+        # Prepare stdin
+        stdin = " ".join(stdin)
+
+        # Set buffer flag
         if '%' in option:
             buffer = False
         else:
             buffer = True
 
-        # set pipe_out
-        if pipe:
+        # Set pipe_out
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -756,7 +840,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     @commands.command(pass_context=True, name='cat')
     async def cat(self, ctx, *args, **kwargs):
@@ -790,17 +874,25 @@ class GNU:
                 option.add(arg[1:])
             else:
                 stdin.append(arg)
-        stdin = " ".join(stdin)
         self._split_option(option)
 
-        # set buffer flag
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
+
+        # Prepare stdin
+        stdin = " ".join(stdin)
+
+        # Set buffer flag
         if '%' in option:
             buffer = False
         else:
             buffer = True
 
-        # set pipe_out
-        if pipe:
+        # Set pipe_out
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -873,7 +965,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     @commands.command(pass_context=True, name='tac')
     async def tac(self, ctx, *args, **kwargs):
@@ -909,17 +1001,25 @@ class GNU:
                     option_sep = next(iterator)
             else:
                 stdin.append(arg)
-        stdin = " ".join(stdin)
         self._split_option(option)
 
-        # set buffer flag
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
+
+        # Prepare stdin
+        stdin = " ".join(stdin)
+
+        # Set buffer flag
         if '%' in option:
             buffer = False
         else:
             buffer = True
 
-        # set pipe_out
-        if pipe:
+        # Set pipe_out
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -977,7 +1077,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     @commands.command(pass_context=True, name='sed')
     async def sed(self, ctx, *args, **kwargs):
@@ -1029,16 +1129,25 @@ class GNU:
                 script = arg
             else:
                 stdin.append(arg)
+        self._split_option(option)
+
+        # Only look for redirected stdout if there is no pipe
+        if not pipe:
+            redirect = self._get_redirect(stdin)
+        else:
+            redirect = None
+
+        # Prepare stdin
         stdin = " ".join(stdin)
 
-        # set buffer flag
+        # Set buffer flag
         if '%' in option:
             buffer = False
         else:
             buffer = True
 
-        # set pipe_out
-        if pipe:
+        # Set pipe_out
+        if pipe or redirect:
             pipe_out = []
         else:
             pipe_out = None
@@ -1328,7 +1437,7 @@ class GNU:
         await self._flush_buffer(display_count, ctx.message.author, True, buffer, True)
 
         # handle pipe
-        await self._pipe(ctx, pipe, pipe_out)
+        await self._pipe(ctx, pipe, pipe_out, redirect)
 
     async def logger(self, message):
         """Log channel messages"""
