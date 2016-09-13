@@ -556,7 +556,7 @@ class TokyoTosho:
             await asyncio.sleep(self.config["check_interval"])
 
         # end while loop
-    # end rss_checker
+    # end check_rss
 
     def sanitize(self, s: str, type: str) -> str:
         """Sanitize discord message"""
