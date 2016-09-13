@@ -4,6 +4,7 @@ from cogs.utils import checks
 import os
 import re
 import aiohttp
+import copy
 from datetime import timezone
 
 try:  # check if BeautifulSoup4 is installed
@@ -307,7 +308,6 @@ class GNU:
             log = f.read()
         return log
 
-
     @commands.command(pass_context=True, name='pastebin')
     @checks.admin_or_permissions()
     async def pastebin(self, ctx, *args):
@@ -343,11 +343,6 @@ class GNU:
                                "\nclog status        Display log settings and status for current channel."
                                "\nclog delete        Delete all logs for current channel."
                                "```")
-            return
-
-        # ignore private channels
-        if ctx.message.channel.is_private:
-            await self.bot.say("Chat log not available for private channels.")
             return
 
         # parse arguments
@@ -493,14 +488,6 @@ class GNU:
         # try pipe_in if input is empty
         if not stdin and "pipe_in" in kwargs:
             stdin = kwargs["pipe_in"]
-
-        '''
-        await self.bot.say("option: " + str(option))
-        await self.bot.say("option_num: " + str(option_num))
-        await self.bot.say("search: " + search)
-        await self.bot.say("input: " + input)
-        await self.bot.say("pipe: " + str(pipe))
-        '''
 
         # check arguments
         if not search or not stdin:
@@ -1439,23 +1426,28 @@ class GNU:
         # handle pipe
         await self._pipe(ctx, pipe, pipe_out, redirect)
 
-    async def logger(self, message):
-        """Log channel messages"""
-
-        # Do not log private channels
-        if message.channel.is_private:
+    async def message_logger(self, message):
+        """Log message - Credit https://github.com/tekulvw/Squid-Plugins"""
+        # Do not log if logging is disabled for channel
+        if message.channel.id not in self.config or not self.config[message.channel.id]["active"]:
             return
+        # Do not log if message from bot and log_bot disabled
+        if message.author == self.bot.user and not self.config[message.channel.id]["log_bot"]:
+            return
+        # Log message
+        self.log(message)
 
+    async def message_edit_logger(self, before, after):
+        """Log message edits - Credit https://github.com/tekulvw/Squid-Plugins"""
+        new_message = copy.deepcopy(after)
+        new_content = ("EDIT:\nBefore: {}\nAfter: {}".format(before.clean_content, after.clean_content))
+        new_message.content = new_content
+        await self.message_logger(new_message)
+
+    def log(self, message):
+        """Write log to disk"""
         sid = message.server.id
         cid = message.channel.id
-
-        # Check if logging is enabled for channel
-        if cid not in self.config or not self.config[cid]["active"]:
-            return
-
-        # Do not log if message from bot and log_bot disabled
-        if message.author == self.bot.user and not self.config[cid]["log_bot"]:
-            return
 
         # Get log file path
         folder = os.path.join(self.base_dir, sid)
@@ -1464,15 +1456,19 @@ class GNU:
         file = os.path.join(folder, cid)
 
         # Resize if needed
-        size = os.path.getsize(file)
-        if size > self.config[cid]["max_size"]:
-            bytes = self.config[cid]["max_size"] * -1 + self.log_buffer
-            with open(file, mode='rb+') as f:
-                f.seek(bytes, os.SEEK_END)
-                data = f.read()
-                f.seek(0)
-                f.write(data)
-                f.truncate()
+        try:
+            size = os.path.getsize(file)
+            if size > self.config[cid]["max_size"]:
+                bytes = self.config[cid]["max_size"] * -1 + self.log_buffer
+                with open(file, mode='rb+') as f:
+                    f.seek(bytes, os.SEEK_END)
+                    data = f.read()
+                    f.seek(0)
+                    f.write(data)
+                    f.truncate()
+        except:
+            # log file not created yet
+            pass
 
         # Write log
         with open(file, encoding="utf-8", mode='a') as f:
@@ -1517,7 +1513,8 @@ def setup(bot):
         check_folders()
         check_files()
         n = GNU(bot)
-        bot.add_listener(n.logger, 'on_message')
+        bot.add_listener(n.message_logger, 'on_message')
+        bot.add_listener(n.message_edit_logger, 'on_message_edit')
         bot.add_cog(n)
     else:
         raise RuntimeError("You need to run `pip3 install beautifulsoup4`")
