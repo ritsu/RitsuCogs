@@ -109,7 +109,13 @@ Options
 
 ### Input Format and Global Options
 
-All GNU commands accept the same types of input. @chat requires the chatlog cog included in this repo. There are a few global options that apply to input and output.
+All commands accept input from the following:
+
+- Website content if a valid URL is specified
+- Chat log if @chat is specified (Chat log must be enabled for the channel, e.g. `!clog on`)
+- Any text following the command if none of the above are detected.
+
+The following options for input and output apply to all commands:
 
 ```
 Global Options
@@ -126,6 +132,8 @@ Input
     <input> If none of the previous inputs are detected, remaining text is treated as input.
             To preserve whitespace (including newlines), enclose entire input in quotes.
 ```
+
+Chat log options can be configured with the <b>clog</b> command.
 
 ## TokyoTosho
 
