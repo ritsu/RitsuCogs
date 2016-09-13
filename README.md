@@ -1,14 +1,49 @@
 # RitsuCogs
 
-Some custom cogs for Red-DiscordBot  
-Add repo: ```!cog repo add ritsu-cogs https://github.com/ritsu/RitsuCogs```
+Some Unix/Linux and Anime related cogs for <a href="https://github.com/Twentysix26/Red-DiscordBot">Red-DiscordBot</a>.
+
+Add repo: ```[p]cog repo add ritsu-cogs https://github.com/ritsu/RitsuCogs```
 
 ## GNU
 
-An attempt to emulate some common GNU utilities. Pipes are supported, for example:  
+An attempt to emulate some common GNU utilities. 
+
+### Pipes
+
+Output from one command can be piped to the input of another.
+
+```[p]sed "s/^.{0,20}$//" http://news.google.com | grep -i apple | sed s/apple/Orange/i | tail -n 5```
+
+Prefix is optional for commands that appear after a pipe. 
+
+### Input and Output
+
+All commands accept input from the following:
+
+- Website content if a valid URL is specified
+- Chat log if @chat is specified (Chat log must be enabled for the channel, e.g. `!clog on`)
+- Any text following the command if none of the above are detected.
+
+The following options for input and output apply to all non-administrative commands:
+
 ```
-!sed "s/^.{0,20}$//" http://news.google.com | !grep -i apple | !sed s/apple/Orange/i | !tail -n 5
+Global Options
+    -p       If input is a URL, this will treat the URL content as (prettified) html instead of a DOM.
+    -@       Same as -p except source is not passed through BeautifulSoup's prettify().
+    -%       Print each line as a separate message; more likely to hit Discord's 5/5 rate limit.
 ```
+
+Chat log options can be configured with the <b>clog</b> command.
+
+### Redirected output
+
+Output can be redirected to <a href="http://pastebin.com/">pastebin</a> instead of Discord chat with the syntax `> paste_title`. If successful, a link to the generated pastebin will be posted in chat. When used with pipes, the redirect must appear at the end.
+
+```[p]cat http://news.google.com > latest_news```
+
+A <a href="http://pastebin.com/api">pastebin API key</a> is required for this feature. Save the API key with the command:
+
+```[p]pastebin [api_key]```
 
 ### grep
 
@@ -107,48 +142,20 @@ Options
                 start printing with line num from the start of input, instead of from the end.
 ```
 
-### Input Format and Global Options
-
-All commands accept input from the following:
-
-- Website content if a valid URL is specified
-- Chat log if @chat is specified (Chat log must be enabled for the channel, e.g. `!clog on`)
-- Any text following the command if none of the above are detected.
-
-The following options for input and output apply to all commands:
-
-```
-Global Options
-    -p       If input is a URL, this will treat the URL content as (prettified) html instead of a DOM.
-    -@       Same as -p except source is not passed through BeautifulSoup's prettify().
-    -%       Print each line as a separate message; more likely to hit Discord's 5/5 rate limit.
-
-Input
-    URL     If input matches a URL pattern, bot will fetch URL content as input.
-            By default, DOM will be parsed from URL content and text elements will be treated as "lines"
-            If -p option is set, URL content will be treated as plain text.
-    @chat   If '@chat' is specified as the input, will search in chat log.
-            Logging must be activated in the channel for this to work.
-    <input> If none of the previous inputs are detected, remaining text is treated as input.
-            To preserve whitespace (including newlines), enclose entire input in quotes.
-```
-
-Chat log options can be configured with the <b>clog</b> command.
-
 ## TokyoTosho
 
 ### Get search results in your discord channel
 
-`!tt search [terms] [#type]`
+`[p]tt search [terms] [#type]`
 
 <b>terms</b> are normal searech terms. Prepend a "-" for exclusion terms.  
-<b>type</b> (optional) is one of the types/categories defined on TokyoTosho. Type `!tt types` to see a list of valid types.
+<b>type</b> (optional) is one of the types/categories defined on TokyoTosho. Type `[p]tt types` to see a list of valid types.
 
 Example: `!tt search madoka rebellion -dub #anime`
 
 ### Show RSS alerts in your discord channel
 
-`!tt add [terms] [#types]`
+`[p]tt add [terms] [#types]`
 
 Adds an alert to your channel. The bot will display torrent name and link when a new torrent matching the configured <b>terms</b> and <b>types</b> (optional) appears in TokyoTosho's RSS feed. Note you can specify multiple types for RSS alerts.
 
@@ -156,21 +163,21 @@ Example: `!tt add shokugeki 1080 -raw #anime`
 
 ### Manage RSS alerts
 
-`!tt list`
+`[p]tt list`
 
 Lists existing alerts configured for your channel.
 
-`!tt check`
+`[p]tt check`
 
 Checks existing alerts against the current RSS feed. The latest (1) item will be returned for each alert. The RSS feed only contains the last 150 items, so old items will not appear.
 
-`!tt remove [terms] [#types]`
+`[p]tt remove [terms] [#types]`
 
 Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
 
 ### Config options
 
-`!tt set [option] [value]`
+`[p]tt set [option] [value]`
 
 Sets various options
 
