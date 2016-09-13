@@ -577,8 +577,8 @@ def check_files():
         print("Creating default " + TokyoTosho.config_path + " ...")
         dataIO.save_json(TokyoTosho.config_path, TokyoTosho.default_config)
     if not dataIO.is_valid_json(TokyoTosho.alert_path):
-        print("Creating empty " + TokyoTosho.config_path + " ...")
-        dataIO.save_json(TokyoTosho.config_path, [])
+        print("Creating empty " + TokyoTosho.alert_path + " ...")
+        dataIO.save_json(TokyoTosho.alert_path, [])
 
 def setup(bot):
     if soupAvailable:
