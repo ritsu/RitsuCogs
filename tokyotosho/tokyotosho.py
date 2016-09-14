@@ -192,7 +192,7 @@ class TokyoTosho:
             pass
 
         # display results in channel
-        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(url), "inline"))
+        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(url, "plain"), "inline"))
         step = self.config["items_per_message"]
         messages = [result[i:i+step] for i in range(0, len(result), step)]
         for i, message in enumerate(messages):
@@ -386,7 +386,7 @@ class TokyoTosho:
                 msg.append("```{0} {1} {2}```".format(
                     self.sanitize(" ".join(alert["INCLUDE"]), "box"),
                     self.sanitize(" ".join(alert["EXCLUDE"]), "box"),
-                    self.sanitize(" ".join(category))
+                    self.sanitize(" ".join(category), "box")
                 ))
                 include = set(alert["INCLUDE"])
                 exclude = set([term[1:] for term in alert["EXCLUDE"]])
