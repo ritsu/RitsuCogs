@@ -60,7 +60,7 @@ class sysinfo:
 
         # Network
         net_io = psutil.net_io_counters()
-        net_ios = ("Network:"
+        net_ios = ("Network"
                    "\n\t{0:<11}: {1:>8}".format("Bytes sent", self._size(net_io.bytes_sent)) +
                    "\n\t{0:<11}: {1:>8}".format("Bytes recv", self._size(net_io.bytes_recv)))
 
