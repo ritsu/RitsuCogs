@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "kagami#6142",
+    "NAME" : "psutil",
+    "SHORT" : "Display system information",
+    "DESCRIPTION" : "Uses psutil to display cpu, memory, and disk info"
+}
