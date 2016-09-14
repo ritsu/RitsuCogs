@@ -37,7 +37,12 @@ Chat log options can be configured with the <b>clog</b> command.
 
 ### Redirected output
 
-Output can be redirected to <a href="http://pastebin.com/">pastebin</a> instead of Discord chat with either `> paste_title` (creates a 24 hr pastebin) or `>> paste_title` (creates a permanent pastebin). If successful, a link to the generated pastebin will be posted in chat. When used with pipes, the redirect must appear at the end.
+Output can be redirected to <a href="http://pastebin.com/">pastebin</a> instead of Discord chat with one of the following:
+
+- `> paste_title` creates a 24 hr pastebin  
+- `>> paste_title` creates a permanent pastebin  
+
+A link to the generated pastebin will be posted in chat. When used with pipes, the redirect must appear at the end.
 
 ```[p]cat -b http://news.google.com | grep -rm 10 .{40,} > somenews```
 
