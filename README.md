@@ -186,3 +186,20 @@ Sets various options
 - `ignore` List of categories that are ignored in all search and RSS alerts
 - `items_per_message` Max number of items the bot will mention in one message
 
+## SysInfo
+
+Displays CPU, memory, disk and network information for the machine running the bot.  
+Requires psutil `pip3 install psutil`
+
+```[p]sysinfo ```
+
+Shows the following information:
+- CPU Count
+- CPU Usage
+- CPU Times
+- Virtual Memory
+- Swap Memory
+- Open File Handles
+- Disk Usage
+- Network Bytes Sent/Recv
+- Boot Time
