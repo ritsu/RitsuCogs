@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "kagami#6142",
-    "NAME" : "psutil",
+    "NAME" : "sysinfo",
     "SHORT" : "Display system information",
-    "DESCRIPTION" : "Uses psutil to display cpu, memory, and disk info"
+    "DESCRIPTION" : "Uses psutil to display cpu, memory, disk and network info"
 }
