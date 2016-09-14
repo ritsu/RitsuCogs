@@ -175,6 +175,12 @@ class GNU:
         lines_said = 0
         # handle pipe
         if "pipe_out" in kwargs and isinstance(kwargs["pipe_out"], list):
+            # build line
+            if "line_num" in kwargs and kwargs["line_num"] is not None:
+                # preserve enough space for "...:"
+                if kwargs["num_width"] < 3:
+                    kwargs["num_width"] = 3
+                line = "{0:>{width}}: {1}".format(kwargs["line_num"], line, width=kwargs["num_width"])
             kwargs["pipe_out"].append(line)
             return lines_said
 
