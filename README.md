@@ -151,18 +151,18 @@ Options
 
 ### Get search results in your discord channel
 
-`[p]tt search [terms] [#type]`
+`[p]tt search [terms] [#category]`
 
 <b>terms</b> are normal searech terms. Prepend a "-" for exclusion terms.  
-<b>type</b> (optional) is one of the types/categories defined on TokyoTosho. Type `[p]tt types` to see a list of valid types.
+<b>category</b> (optional) is one of the categories defined on TokyoTosho. Type `[p]tt cats` to see a list of valid categories.
 
 Example: `!tt search madoka rebellion -dub #anime`
 
 ### Show RSS alerts in your discord channel
 
-`[p]tt add [terms] [#types]`
+`[p]tt add [terms] [#categories]`
 
-Adds an alert to your channel. The bot will display torrent name and link when a new torrent matching the configured <b>terms</b> and <b>types</b> (optional) appears in TokyoTosho's RSS feed. Note you can specify multiple types for RSS alerts.
+Adds an alert to your channel. The bot will display torrent name and link when a new torrent matching the configured <b>terms</b> and <b>categories</b> (optional) appears in TokyoTosho's RSS feed. Note you can specify multiple categories for RSS alerts.
 
 Example: `!tt add shokugeki 1080 -raw #anime`
 
@@ -176,9 +176,9 @@ Lists existing alerts configured for your channel.
 
 Checks existing alerts against the current RSS feed. The latest (1) item will be returned for each alert. The RSS feed only contains the last 150 items, so old items will not appear.
 
-`[p]tt remove [terms] [#types]`
+`[p]tt remove [terms] [#categories]`
 
-Removes alerts matching (exactly) the specified <b>terms</b> and <b>types</b> if they exist in your channel. If no matching alerts are found, nothing happens.
+Removes alerts matching (exactly) the specified <b>terms</b> and <b>categories</b> if they exist in your channel. If no matching alerts are found, nothing happens.
 
 ### Config options
 
