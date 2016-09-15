@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cogs.utils.chat_formatting import *
+from cogs.utils.chat_formatting import escape_mass_mentions
 from cogs.utils.dataIO import dataIO
 from cogs.utils import checks
 import os
@@ -8,10 +8,10 @@ import aiohttp
 from datetime import datetime
 
 try: # check if BeautifulSoup4 is installed
-	from bs4 import BeautifulSoup
-	soupAvailable = True
+    from bs4 import BeautifulSoup
+    soupAvailable = True
 except:
-	soupAvailable = False
+    soupAvailable = False
 
 class TokyoTosho:
     """TokyoTosho search and RSS alerts"""
@@ -142,6 +142,8 @@ class TokyoTosho:
             q = "index.php?cat=" + cat
 
         # get url
+        soup = None
+        url = None
         for url in self.config["urls"]:
             try:
                 url += q
@@ -152,10 +154,15 @@ class TokyoTosho:
             except:
                 await self.bot.say("`{0}` failed, trying next URL...".format(url))
 
+        if soup is None:
+            await self.bot.say("TokyoTosho seems to be down.")
+            return
+
         table = soup.find("table", attrs={"class": "listing"})
         rows = table.find_all("tr", class_=True)
         result = []
         count = 0
+        item = ''
         for row in rows:
             td_link = row.find("td", attrs={"class": "desc-top"})
             td_desc = row.find("td", attrs={"class": "desc-bot"})
@@ -367,6 +374,7 @@ class TokyoTosho:
         """
 
         # get rss
+        soup = None
         for url in self.config["urls"]:
             try:
                 url += "rss.php"
@@ -376,6 +384,10 @@ class TokyoTosho:
                         break
             except:
                 await self.bot.say("`{0}` failed, trying next URL...".format(url))
+
+        if soup is None:
+            await self.bot.say("TokyoTosho seems to be down.")
+            return
 
         count = 0
         for i, alert in enumerate(self.alerts):
@@ -394,6 +406,7 @@ class TokyoTosho:
 
                 # Parse RSS and display result
                 items = soup.find_all("item")
+                match = False
                 for item in items:
                     match = True
                     title = item.find("title").get_text()
@@ -444,10 +457,8 @@ class TokyoTosho:
 
         Usage: cats
         """
-
         cats = [cat for cat in self.cats.keys() if cat not in self.config["ignore"]]
         await self.bot.say(" ".join(cats))
-
 
     async def check_rss(self):
         """Check RSS feed for new items"""
@@ -558,7 +569,8 @@ class TokyoTosho:
         # end while loop
     # end check_rss
 
-    def sanitize(self, s: str, type: str) -> str:
+    @staticmethod
+    def sanitize(s: str, type: str) -> str:
         """Sanitize discord message"""
         if type == "plain":
             return escape_mass_mentions(s)
@@ -567,10 +579,12 @@ class TokyoTosho:
         elif type == "box":
             return s.replace("```", "'''")
 
+
 def check_folders():
     if not os.path.exists(TokyoTosho.base_dir):
         print("Creating " + TokyoTosho.base_dir + " folder...")
         os.makedirs(TokyoTosho.base_dir)
+
 
 def check_files():
     if not dataIO.is_valid_json(TokyoTosho.config_path):
@@ -579,6 +593,7 @@ def check_files():
     if not dataIO.is_valid_json(TokyoTosho.alert_path):
         print("Creating empty " + TokyoTosho.alert_path + " ...")
         dataIO.save_json(TokyoTosho.alert_path, [])
+
 
 def setup(bot):
     if soupAvailable:
