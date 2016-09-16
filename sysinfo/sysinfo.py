@@ -11,7 +11,7 @@ except:
     psutilAvailable = False
 
 class sysinfo:
-    """Display CPU, Memory, Disk, and Network information"""
+    """Display CPU, Memory, Disk and Network information"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +22,7 @@ class sysinfo:
         """Show CPU, Memory, Disk, and Network information"""
 
         # CPU
-        cpu_cs = "CPU Count: {0} Physical, {1} Logical".format(psutil.cpu_count(), psutil.cpu_count(logical=False))
+        cpu_cs = "CPU Count: {0} Physical, {1} Logical".format(psutil.cpu_count(logical=False), psutil.cpu_count())
         psutil.cpu_percent(interval=None, percpu=True)
         await asyncio.sleep(1)
         cpu_ps = "CPU Usage: {0}".format(psutil.cpu_percent(interval=None, percpu=True))
@@ -80,6 +80,7 @@ class sysinfo:
                 return "{0:.1f}{1}".format(num, unit)
             num /= 1024.0
         return "{0:.1f}{1}".format(num, "YB")
+
 
 def setup(bot):
     if psutilAvailable:
