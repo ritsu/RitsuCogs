@@ -10,7 +10,8 @@ try:
 except:
     psutilAvailable = False
 
-class sysinfo:
+
+class SysInfo:
     """Display CPU, Memory, Disk and Network information"""
 
     def __init__(self, bot):
@@ -47,7 +48,7 @@ class sysinfo:
 
         # Open files
         open_f = psutil.Process().open_files()
-        common = os.path.commonpath([f.path for f in open_f])
+        common = os.path.commonpath([f.path for f in open_f]) if open_f else ""
         open_fs = "\n\t".join(["{0} [{1}]".format(f.path.replace(common, '.'), f.mode) for f in open_f])
         open_fs = "Open File Handles\n\t" + open_fs
 
@@ -84,7 +85,7 @@ class sysinfo:
 
 def setup(bot):
     if psutilAvailable:
-        n = sysinfo(bot)
+        n = SysInfo(bot)
         bot.add_cog(n)
     else:
         raise RuntimeError("You need to run 'pip3 install psutil'")
