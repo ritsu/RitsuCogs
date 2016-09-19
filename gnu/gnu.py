@@ -139,7 +139,7 @@ class GNU:
             redirect = {"api_paste_name": stdin.pop()[2:], "api_paste_expire_date": "N"}
             return redirect
         elif len(stdin) > 0 and len(stdin[-1]) > 1 and stdin[-1][0] == ">":
-            # Permanent pastebin
+            # Temporary pastebin
             redirect = {"api_paste_name": stdin.pop()[1:], "api_paste_expire_date": "1D"}
             return redirect
 
