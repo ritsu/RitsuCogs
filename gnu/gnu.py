@@ -315,7 +315,7 @@ class GNU:
         return log
 
     @commands.command(pass_context=True, name='pastebin')
-    @checks.admin_or_permissions()
+    @checks.is_owner()
     async def pastebin(self, ctx, *args):
         """Set pastebin API key
 
