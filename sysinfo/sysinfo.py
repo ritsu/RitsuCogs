@@ -31,7 +31,7 @@ class SysInfo:
         cpu_p = psutil.cpu_percent(interval=None, percpu=True)
         cpu_ps = ("CPU Usage"
                   "\n\t{0:<8}: {1}".format("Per CPU", cpu_p) +
-                  "\n\t{0:<8}: {1:.1f}".format("Overall", sum(cpu_p)/len(cpu_p)))
+                  "\n\t{0:<8}: {1:.1f}%".format("Overall", sum(cpu_p)/len(cpu_p)))
         cpu_t = psutil.cpu_times()
         width = max([len("{:,}".format(int(n))) for n in [cpu_t.user, cpu_t.system, cpu_t.idle]])
         cpu_ts = ("CPU Times"
