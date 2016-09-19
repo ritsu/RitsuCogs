@@ -41,11 +41,11 @@ class SysInfo:
 
         # Memory
         mem_v = psutil.virtual_memory()
-        width = max([len(self._size(n)) for n in [mem_v.total, mem_v.free, (mem_v.total - mem_v.free)]])
+        width = max([len(self._size(n)) for n in [mem_v.total, mem_v.available, (mem_v.total - mem_v.available)]])
         mem_vs = ("Virtual Memory"
-                  "\n\t{0:<10}: {1:>6}".format("Total", self._size(mem_v.total), width=width) +
-                  "\n\t{0:<10}: {1:>6}".format("Available", self._size(mem_v.available), width=width) +
-                  "\n\t{0:<10}: {1:>{width}} {2}%".format("Used", self._size(mem_v.total - mem_v.free),
+                  "\n\t{0:<10}: {1:>{width}}".format("Total", self._size(mem_v.total), width=width) +
+                  "\n\t{0:<10}: {1:>{width}}".format("Available", self._size(mem_v.available), width=width) +
+                  "\n\t{0:<10}: {1:>{width}} {2}%".format("Used", self._size(mem_v.total - mem_v.available),
                                                           mem_v.percent, width=width))
         mem_s = psutil.swap_memory()
         width = max([len(self._size(n)) for n in [mem_s.total, mem_s.free, (mem_s.total - mem_s.free)]])
