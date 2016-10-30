@@ -5,7 +5,6 @@ from cogs.utils import checks
 import os
 import asyncio
 import aiohttp
-import async_timeout
 from datetime import datetime
 
 try: # check if BeautifulSoup4 is installed
