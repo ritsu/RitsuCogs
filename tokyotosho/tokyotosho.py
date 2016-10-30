@@ -5,6 +5,7 @@ from cogs.utils import checks
 import os
 import asyncio
 import aiohttp
+import async_timeout
 from datetime import datetime
 
 try: # check if BeautifulSoup4 is installed
@@ -36,6 +37,39 @@ class TokyoTosho:
 
         self.cats = {"anime": 1, "music": 2, "manga": 3, "hentai": 4, "other": 5, "raws": 7, "drama": 8, "music-video": 9, "non-english": 10, "batch": 11, "hentai-anime": 12, "hentai-manga": 13, "hentai-games": 14, "jav": 15 }
         self.pubdate_format = "%a, %d %b %Y %H:%M:%S %Z"
+
+    async def _get_soup(self, **kwargs):
+        """Get soup object from tokyotosho
+        :kwarg channel_id:   channel id
+        :kwarg query:        page or query
+        """
+
+        soup = None
+        channel_obj = None
+        if "channel_id" in kwargs:
+            channel_obj = self.bot.get_channel(kwargs["channel_id"])
+
+        # Try to get soup object from tokyotosho
+        for url in self.config["urls"]:
+            try:
+                if channel_obj is not None:
+                    await self.bot.send_message(channel_obj, "Querying `{0}`...".format(url))
+                if "query" in kwargs:
+                    url += kwargs["query"]
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=5) as response:
+                        await self.bot.send_message(channel_obj, "Got response `{0}`...".format(response))
+                        soup = BeautifulSoup(await response.text(), "html.parser")
+                        break
+            except:
+                pass
+
+        # Handle cases when tokyotosho is down
+        if not soup:
+            if channel_obj is not None:
+                await self.bot.send_message(channel_obj, "TokyoTosho seems to be down.")
+
+        return soup
 
     @commands.group(pass_context = True)
     async def tt(self, ctx):
@@ -141,21 +175,9 @@ class TokyoTosho:
         elif cat:
             q = "index.php?cat=" + cat
 
-        # get url
-        soup = None
-        url = None
-        for url in self.config["urls"]:
-            try:
-                url += q
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        soup = BeautifulSoup(await response.text(), "html.parser")
-                        break
-            except:
-                await self.bot.say("`{0}` failed, trying next URL...".format(url))
-
+        # get soup
+        soup = await self._get_soup(channel_id=ctx.message.channel.id, query=q)
         if soup is None:
-            await self.bot.say("TokyoTosho seems to be down.")
             return
 
         table = soup.find("table", attrs={"class": "listing"})
@@ -374,19 +396,8 @@ class TokyoTosho:
         """
 
         # get rss
-        soup = None
-        for url in self.config["urls"]:
-            try:
-                url += "rss.php"
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        soup = BeautifulSoup(await response.text(), "html.parser")
-                        break
-            except:
-                await self.bot.say("`{0}` failed, trying next URL...".format(url))
-
+        soup = await self._get_soup(channel_id=ctx.message.channel.id, query="rss.php")
         if soup is None:
-            await self.bot.say("TokyoTosho seems to be down.")
             return
 
         count = 0
@@ -464,16 +475,8 @@ class TokyoTosho:
         """Check RSS feed for new items"""
         while self == self.bot.get_cog("TokyoTosho"):
             # get rss
-            for url in self.config["urls"]:
-                try:
-                    url += "rss.php"
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(url) as response:
-                            soup = BeautifulSoup(await response.text(), "html.parser")
-                            break
-                except:
-                    pass
-            if not soup:
+            soup = await self._get_soup(channel_id=ctx.message.channel.id, query="rss.php")
+            if soup is None:
                 await asyncio.sleep(self.config["check_interval"])
                 continue
 
