@@ -17,6 +17,7 @@ class TokyoTosho:
     """TokyoTosho search and RSS alerts"""
 
     default_config = {"check_interval": 120,
+                      "timeout": 8,
                       "items_per_message": 8,
                       "comment_length": 120,
                       "urls": ["https://www.tokyotosho.info/",
@@ -36,6 +37,46 @@ class TokyoTosho:
 
         self.cats = {"anime": 1, "music": 2, "manga": 3, "hentai": 4, "other": 5, "raws": 7, "drama": 8, "music-video": 9, "non-english": 10, "batch": 11, "hentai-anime": 12, "hentai-manga": 13, "hentai-games": 14, "jav": 15 }
         self.pubdate_format = "%a, %d %b %Y %H:%M:%S %Z"
+
+    def _get_config(self, param):
+        if param in self.config:
+            return self.config[param]
+        elif param in self.default_config:
+            return self.default_config[param]
+        else:
+            return None
+
+    async def _get_soup(self, **kwargs):
+        """Get soup object from tokyotosho
+        :kwarg channel_id:   channel id
+        :kwarg query:        page or query
+        :return:             {"soup": SoupObject, "url": SourceURL}
+        """
+
+        soup = None
+        channel_obj = None
+        if "channel_id" in kwargs:
+            channel_obj = self.bot.get_channel(kwargs["channel_id"])
+
+        # Try to get soup object from tokyotosho
+        for url in self._get_config("urls"):
+            try:
+                if "query" in kwargs:
+                    url += kwargs["query"]
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=self._get_config("timeout")) as response:
+                        soup = BeautifulSoup(await response.text(), "html.parser")
+                        break
+            except:
+                if channel_obj is not None:
+                    await self.bot.send_message(channel_obj, "`{0}` failed, trying next URL...".format(url))
+
+        # Handle cases when tokyotosho is down
+        if not soup:
+            if channel_obj is not None:
+                await self.bot.send_message(channel_obj, "TokyoTosho seems to be down.")
+
+        return {"soup": soup, "url": url}
 
     @commands.group(pass_context = True)
     async def tt(self, ctx):
@@ -76,19 +117,19 @@ class TokyoTosho:
 
         # Make sure key is valid
         key = args[0]
-        if key not in self.config:
+        if key not in self.default_config:
             await self.bot.say("Unknown option")
             return
 
         # Get value
         if len(args) == 1:
             # Echo current option if no value
-            value = self.config[key]
+            value = self._get_config(key)
             if isinstance(value, list):
                 value = " ".join(value)
             await self.bot.say("Current {0}: `{1}`".format(key, self.sanitize(str(value), "inline")))
             return
-        elif key in ("check_interval", "items_per_message", "comment_length"):
+        elif key in ("check_interval", "timeout", "items_per_message", "comment_length"):
             value = int(args[1])
         elif key in ("ignore", "urls"):
             value = list(args[1:])
@@ -141,22 +182,11 @@ class TokyoTosho:
         elif cat:
             q = "index.php?cat=" + cat
 
-        # get url
-        soup = None
-        url = None
-        for url in self.config["urls"]:
-            try:
-                url += q
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        soup = BeautifulSoup(await response.text(), "html.parser")
-                        break
-            except:
-                await self.bot.say("`{0}` failed, trying next URL...".format(url))
-
-        if soup is None:
-            await self.bot.say("TokyoTosho seems to be down.")
+        # get soup
+        result = await self._get_soup(channel_id=ctx.message.channel.id, query=q)
+        if result["soup"] is None:
             return
+        soup = result["soup"]
 
         table = soup.find("table", attrs={"class": "listing"})
         rows = table.find_all("tr", class_=True)
@@ -172,19 +202,19 @@ class TokyoTosho:
                 cat_num = int(cat_url[cat_url.find('=')+1:])
                 cat_name = list(self.cats.keys())[list(self.cats.values()).index(cat_num)]
                 # Skip ignored categories
-                if cat_name in self.config["ignore"]:
+                if cat_name in self._get_config("ignore"):
                     continue
                 # Get name and link
                 a_link = td_link.find_all("a")[-1]
                 item = "**{0}** :: {1}\n".format(a_link.get_text(), a_link.get("href"))
             elif td_desc:
                 # Skip ignored categories
-                if cat_name in self.config["ignore"]:
+                if cat_name in self._get_config("ignore"):
                     continue
                 # Get description
                 desc = td_desc.get_text()
-                if len(desc) > self.config["comment_length"]:
-                    desc = desc[:self.config["comment_length"]] + "..."
+                if len(desc) > self._get_config("comment_length"):
+                    desc = desc[:self._get_config("comment_length")] + "..."
                 # Remove links from comment
                 desc = desc.replace("http", "h\*\*p")
                 item += "[{0}] {1}\n".format(cat_name.capitalize(), desc)
@@ -199,8 +229,8 @@ class TokyoTosho:
             pass
 
         # display results in channel
-        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(url, "plain"), "inline"))
-        step = self.config["items_per_message"]
+        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(result["url"], "plain"), "inline"))
+        step = self._get_config("items_per_message")
         messages = [result[i:i+step] for i in range(0, len(result), step)]
         for i, message in enumerate(messages):
             if i > 0:
@@ -374,19 +404,12 @@ class TokyoTosho:
         """
 
         # get rss
-        soup = None
-        for url in self.config["urls"]:
-            try:
-                url += "rss.php"
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        soup = BeautifulSoup(await response.text(), "html.parser")
-                        break
-            except:
-                await self.bot.say("`{0}` failed, trying next URL...".format(url))
+        result = await self._get_soup(channel_id=ctx.message.channel.id, query="rss.php")
+        if result["soup"] is None:
+            return
+        soup = result["soup"]
 
         if soup is None:
-            await self.bot.say("TokyoTosho seems to be down.")
             return
 
         count = 0
@@ -411,7 +434,7 @@ class TokyoTosho:
                     match = True
                     title = item.find("title").get_text()
                     # Skip ignored categories
-                    if item.find("category").get_text().lower() in self.config["ignore"]:
+                    if item.find("category").get_text().lower() in self._get_config("ignore"):
                         continue
                     for term in include:
                         if term.lower() not in title.lower():
@@ -435,8 +458,8 @@ class TokyoTosho:
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
                     description = " | ".join([description[1], description[2], description[4]])
-                    if len(description) > self.config["comment_length"]-30:
-                        description = description[:self.config["comment_length"]-27] + "..."
+                    if len(description) > self._get_config("comment_length")-30:
+                        description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
                         title,
                         item.find("link").get_text(),
@@ -457,24 +480,20 @@ class TokyoTosho:
 
         Usage: cats
         """
-        cats = [cat for cat in self.cats.keys() if cat not in self.config["ignore"]]
+        cats = [cat for cat in self.cats.keys() if cat not in self._get_config("ignore")]
         await self.bot.say(" ".join(cats))
 
     async def check_rss(self):
         """Check RSS feed for new items"""
         while self == self.bot.get_cog("TokyoTosho"):
             # get rss
-            for url in self.config["urls"]:
-                try:
-                    url += "rss.php"
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(url) as response:
-                            soup = BeautifulSoup(await response.text(), "html.parser")
-                            break
-                except:
-                    pass
-            if not soup:
-                await asyncio.sleep(self.config["check_interval"])
+            result = await self._get_soup(query="rss.php")
+            if result["soup"] is None:
+                return
+            soup = result["soup"]
+
+            if soup is None:
+                await asyncio.sleep(self._get_config("check_interval"))
                 continue
 
             # Iterate through alerts
@@ -493,7 +512,7 @@ class TokyoTosho:
                 for item in items:
                     match = True
                     # Skip ignored categories
-                    if item.find("category").get_text().lower() in self.config["ignore"]:
+                    if item.find("category").get_text().lower() in self._get_config("ignore"):
                         continue
 
                     # Skip items that are older than the last alerted item (assume rss is sorted by date, newest first)
@@ -529,8 +548,8 @@ class TokyoTosho:
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
                     description = " | ".join([description[1], description[2], description[4]])
-                    if len(description) > self.config["comment_length"]-30:
-                        description = description[:self.config["comment_length"]-27] + "..."
+                    if len(description) > self._get_config("comment_length")-30:
+                        description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
                         title,
                         item.find("link").get_text(),
@@ -564,7 +583,7 @@ class TokyoTosho:
 
                 await asyncio.sleep(0.5)
 
-            await asyncio.sleep(self.config["check_interval"])
+            await asyncio.sleep(self._get_config("check_interval"))
 
         # end while loop
     # end check_rss
