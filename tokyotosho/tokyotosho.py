@@ -3,9 +3,17 @@ from cogs.utils.chat_formatting import escape_mass_mentions
 from cogs.utils.dataIO import dataIO
 from cogs.utils import checks
 import os
+import logging
 import asyncio
 import aiohttp
+import re
+import js2py
 from datetime import datetime
+
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 try: # check if BeautifulSoup4 is installed
     from bs4 import BeautifulSoup
@@ -51,30 +59,35 @@ class TokyoTosho:
         :kwarg channel_id:   channel id
         :kwarg query:        page or query
         :return:             {"soup": SoupObject, "url": SourceURL}
+                             or None if failed to get soup
         """
 
         soup = None
+        url = None
         channel_obj = None
         if "channel_id" in kwargs:
             channel_obj = self.bot.get_channel(kwargs["channel_id"])
 
         # Try to get soup object from tokyotosho
         for url in self._get_config("urls"):
+            if "query" in kwargs:
+                url += kwargs["query"]
             try:
-                if "query" in kwargs:
-                    url += kwargs["query"]
-                async with aiohttp.ClientSession() as session:
+                async with CloudflareScraper() as session:
                     async with session.get(url, timeout=self._get_config("timeout")) as response:
                         soup = BeautifulSoup(await response.text(), "html.parser")
                         break
-            except:
+            except Exception as e:
                 if channel_obj is not None:
-                    await self.bot.send_message(channel_obj, "`{0}` failed, trying next URL...".format(url))
+                    await self.bot.send_message(
+                        channel_obj,
+                        "`{0}` failed with error: `{1}`. Trying next URL...".format(url, e))
 
-        # Handle cases when tokyotosho is down
+        # Check data
         if not soup:
             if channel_obj is not None:
                 await self.bot.send_message(channel_obj, "TokyoTosho seems to be down.")
+            return None
 
         return {"soup": soup, "url": url}
 
@@ -160,7 +173,7 @@ class TokyoTosho:
             search madoka #music
         """
 
-        # build query
+        # Build query
         terms = []
         cat = ''
         for term in args:
@@ -182,12 +195,14 @@ class TokyoTosho:
         elif cat:
             q = "index.php?cat=" + cat
 
-        # get soup
+        # Get soup
         result = await self._get_soup(channel_id=ctx.message.channel.id, query=q)
-        if result["soup"] is None:
+        if not result or result["soup"] is None:
             return
         soup = result["soup"]
+        url = result["url"]
 
+        # Parse soup
         table = soup.find("table", attrs={"class": "listing"})
         rows = table.find_all("tr", class_=True)
         result = []
@@ -225,11 +240,11 @@ class TokyoTosho:
             summary = table.find_next_sibling("p")
             result.append("*{0}*".format(summary.get_text()))
         except:
-            # no summary if search terms not specified
+            # No summary if search terms not specified
             pass
 
-        # display results in channel
-        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(result["url"], "plain"), "inline"))
+        # Display results in channel
+        await self.bot.say("{0} results from `{1}`".format(count, self.sanitize(url, "plain"), "inline"))
         step = self._get_config("items_per_message")
         messages = [result[i:i+step] for i in range(0, len(result), step)]
         for i, message in enumerate(messages):
@@ -239,7 +254,7 @@ class TokyoTosho:
                 if not answer or answer.content.lower() not in ["more", "m"]:
                     await self.bot.say("Command output stopped.")
                     return
-            # respect 2000 character limit per message
+            # Respect 2000 character limit per message
             chars = 0
             buffer = ""
             for m in message:
@@ -403,14 +418,11 @@ class TokyoTosho:
         Usage: check
         """
 
-        # get rss
+        # Get rss
         result = await self._get_soup(channel_id=ctx.message.channel.id, query="rss.php")
-        if result["soup"] is None:
+        if not result or result["soup"] is None:
             return
         soup = result["soup"]
-
-        if soup is None:
-            return
 
         count = 0
         for i, alert in enumerate(self.alerts):
@@ -486,15 +498,12 @@ class TokyoTosho:
     async def check_rss(self):
         """Check RSS feed for new items"""
         while self == self.bot.get_cog("TokyoTosho"):
-            # get rss
+            # Get rss
             result = await self._get_soup(query="rss.php")
-            if result["soup"] is None:
-                return
-            soup = result["soup"]
-
-            if soup is None:
+            if not result or result["soup"] is None:
                 await asyncio.sleep(self._get_config("check_interval"))
                 continue
+            soup = result["soup"]
 
             # Iterate through alerts
             for i, alert in enumerate(self.alerts):
@@ -573,8 +582,7 @@ class TokyoTosho:
                         if channel_obj and can_speak:
                             await self.bot.send_message(
                                 self.bot.get_channel(channel),
-                                "TokyoTosho RSS alert:\n{0}".format("\n".join(msg))
-                            )
+                                "TokyoTosho RSS alert:\n{0}".format("\n".join(msg)))
 
                 # Update LAST_PUBDATE
                 if new_pubdate:
@@ -597,6 +605,80 @@ class TokyoTosho:
             return s.replace("`", "'")
         elif type == "box":
             return s.replace("```", "'''")
+
+
+class CloudflareScraper(aiohttp.ClientSession):
+    """ Credit https://github.com/pavlodvornikov/aiocfscrape """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @asyncio.coroutine
+    def _request(self, method, url, *args, allow_403=False, **kwargs):
+        resp = yield from super()._request(method, url, *args, **kwargs)
+
+        # Check if Cloudflare anti-bot is on
+        if resp.status == 503 and resp.headers.get("Server") == "cloudflare-nginx":
+            return (yield from self.solve_cf_challenge(resp, **kwargs))
+
+        elif resp.status == 403 and resp.headers.get("Server") == "cloudflare-nginx" and not allow_403:
+            resp.close()
+            raise aiohttp.HttpProcessingError(message='CloudFlare returned HTTP 403. Your IP could be banned on CF '
+                                                      'or reCAPTCHA appeared. This error can be disabled with '
+                                                      'allow_403=True flag in request parameters e.g. '
+                                                      'session.get(url, allow_403=True).', headers=resp.headers)
+
+        # Otherwise, no Cloudflare anti-bot detected
+        return resp
+
+    @asyncio.coroutine
+    def solve_cf_challenge(self, resp, **kwargs):
+        # https://pypi.python.org/pypi/cfscrape has been used as the solution.
+        # The code below (with changes) has been inherited from mentioned lib.
+
+        yield from asyncio.sleep(5, loop=self._loop)  # Cloudflare requires a delay before solving the challenge
+
+        body = yield from resp.text()
+        parsed_url = urlparse(resp.url)
+        domain = parsed_url.netloc
+        submit_url = '{}://{}/cdn-cgi/l/chk_jschl'.format(parsed_url.scheme, domain)
+
+        params = kwargs.setdefault("params", {})
+        headers = kwargs.setdefault("headers", {})
+        headers["Referer"] = resp.url
+
+        try:
+            params["jschl_vc"] = re.search(r'name="jschl_vc" value="(\w+)"', body).group(1)
+            params["pass"] = re.search(r'name="pass" value="(.+?)"', body).group(1)
+
+            # Extract the arithmetic operation
+            js = self.extract_js(body)
+
+        except Exception:
+            # Something is wrong with the page.
+            # This may indicate Cloudflare has changed their anti-bot
+            # technique. If you see this and are running the latest version,
+            # please open a GitHub issue so I can update the code accordingly.
+            logging.error("Unable to parse Cloudflare anti-bot page. "
+                          "Please submit an issue to https://github.com/ritsu/RitsuCogs/issues")
+            raise
+
+        # Safely evaluate the Javascript expression
+        js = js.replace('return', '')
+        params["jschl_answer"] = str(int(js2py.eval_js(js)) + len(domain))
+        resp.close()
+        return (yield from self._request('GET', submit_url, **kwargs))
+
+    def extract_js(self, body):
+        js = re.search(r"setTimeout\(function\(\){\s+(var "
+                       "s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n", body).group(1)
+        js = re.sub(r"a\.value = (parseInt\(.+?\)).+", r"\1", js)
+        js = re.sub(r"\s{3,}[a-z](?: = |\.).+", "", js)
+
+        # Strip characters that could be used to exit the string context
+        # These characters are not currently used in Cloudflare's arithmetic snippet
+        js = re.sub(r"[\n\\']", "", js)
+
+        return js.replace("parseInt", "return parseInt")
 
 
 def check_folders():
