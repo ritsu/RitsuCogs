@@ -148,6 +148,7 @@ Options
 ```
 
 ## TokyoTosho
+Requires js2py to access TokyoTosho behind CloudFlare: `pip3 install js2py`
 
 ### Get search results in your discord channel
 
@@ -174,7 +175,7 @@ Lists existing alerts configured for your channel.
 
 `[p]tt check`
 
-Checks existing alerts against the current RSS feed. The latest (1) item will be returned for each alert. The RSS feed only contains the last 150 items, so old items will not appear.
+Checks existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, so old items will not appear.
 
 `[p]tt remove [terms] [#categories]`
 
@@ -194,7 +195,7 @@ Sets various options
 ## SysInfo
 
 Displays CPU, memory, disk and network information for the machine running the bot.  
-Requires psutil `pip3 install psutil`
+Requires psutil for retreiving system info: `pip3 install psutil`
 
 ```[p]sysinfo ```
 
