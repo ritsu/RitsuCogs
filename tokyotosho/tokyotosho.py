@@ -15,11 +15,12 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
-try: # check if BeautifulSoup4 is installed
+try:  # check if BeautifulSoup4 is installed
     from bs4 import BeautifulSoup
     soupAvailable = True
 except:
     soupAvailable = False
+
 
 class TokyoTosho:
     """TokyoTosho search and RSS alerts"""
@@ -29,8 +30,8 @@ class TokyoTosho:
                       "items_per_message": 8,
                       "comment_length": 120,
                       "urls": ["https://www.tokyotosho.info/",
-                                "http://tokyotosho.se/",
-                                "http://tokyo-tosho.net/"],
+                               "http://tokyotosho.se/",
+                               "http://tokyo-tosho.net/"],
                       "ignore": []}
 
     base_dir = os.path.join("data", "tokyotosho")
@@ -43,7 +44,9 @@ class TokyoTosho:
         self.alerts = dataIO.load_json(TokyoTosho.alert_path)
         self.config = dataIO.load_json(TokyoTosho.config_path)
 
-        self.cats = {"anime": 1, "music": 2, "manga": 3, "hentai": 4, "other": 5, "raws": 7, "drama": 8, "music-video": 9, "non-english": 10, "batch": 11, "hentai-anime": 12, "hentai-manga": 13, "hentai-games": 14, "jav": 15 }
+        self.cats = {"anime": 1, "music": 2, "manga": 3, "hentai": 4, "other": 5, "raws": 7, "drama": 8,
+                     "music-video": 9, "non-english": 10, "batch": 11, "hentai-anime": 12, "hentai-manga": 13,
+                     "hentai-games": 14, "jav": 15}
         self.pubdate_format = "%a, %d %b %Y %H:%M:%S %Z"
 
     def _get_config(self, param):
@@ -91,7 +94,7 @@ class TokyoTosho:
 
         return {"soup": soup, "url": url}
 
-    @commands.group(pass_context = True)
+    @commands.group(pass_context=True)
     async def tt(self, ctx):
         """TokyoTosho search and RSS alerts"""
 
@@ -109,9 +112,9 @@ class TokyoTosho:
                                "\n\nType !help command for more info on a command."
                                "```")
 
-    @tt.command(pass_context=True, name='set')
+    @tt.command(name='set')
     @checks.is_owner()
-    async def set_config(self, ctx, *args: str):
+    async def set_config(self, *args: str):
         """Set config options
 
         Usage: set [option] [value]
@@ -255,7 +258,6 @@ class TokyoTosho:
                     await self.bot.say("Command output stopped.")
                     return
             # Respect 2000 character limit per message
-            chars = 0
             buffer = ""
             for m in message:
                 if len(buffer) + len(m) >= 1900:
@@ -442,24 +444,28 @@ class TokyoTosho:
                 # Parse RSS and display result
                 items = soup.find_all("item")
                 match = False
+                found = False
                 for item in items:
                     match = True
                     title = item.find("title").get_text()
                     # Skip ignored categories
                     if item.find("category").get_text().lower() in self._get_config("ignore"):
                         continue
+                    # Skip items that do not include all required search terms
                     for term in include:
                         if term.lower() not in title.lower():
                             match = False
                             break
                     if not match:
                         continue
+                    # Skip items that include any of the excluded search terms
                     for term in exclude:
                         if term.lower() in title.lower():
                             match = False
                             break
                     if not match:
                         continue
+                    # Skip items that do not include at least one of the categories
                     for term in cat:
                         match = False
                         if term.lower() == item.find("category").get_text().lower():
@@ -467,7 +473,8 @@ class TokyoTosho:
                             break
                     if not match:
                         continue
-
+                    # Set found flag
+                    found = True
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
                     description = " | ".join([description[1], description[2], description[4]])
@@ -480,15 +487,24 @@ class TokyoTosho:
                         item.find("category").get_text(),
                         description
                     ))
-                    break
-                if not match:
+                # Print results
+                if not found:
                     msg.append("No items found for this alert.")
-                await self.bot.say("\n".join(msg))
+                # Respect 2000 character limit per message
+                buffer = ""
+                for m in msg:
+                    if len(buffer) + len(m) >= 1900:
+                        await self.bot.say(buffer)
+                        await asyncio.sleep(1)
+                        buffer = ""
+                    buffer += "\n" + m
+                if buffer:
+                    await self.bot.say(buffer)
         if not count:
             await self.bot.say("No alerts found for this channel.")
 
-    @tt.command(pass_context=True, name='cats')
-    async def show_cats(self, context):
+    @tt.command(name='cats')
+    async def show_cats(self):
         """Show valid categories
 
         Usage: cats
@@ -576,14 +592,20 @@ class TokyoTosho:
                 # Alert channels
                 if msg:
                     # Split items into chunks of 5 if necessary
-                    msgs = [msg[i:i + 5] for i in range(0, len(msg), 5)]
                     for channel in alert["CHANNELS"]:
                         channel_obj = self.bot.get_channel(channel)
                         if channel_obj and channel_obj.permissions_for(channel_obj.server.me).send_messages:
                             await self.bot.send_message(channel_obj, "TokyoTosho RSS alert:")
-                            for m in msgs:
-                                await self.bot.send_message(channel_obj, "\n".join(m))
-                                await asyncio.sleep(1)
+                            # Respect 2000 character limit per message
+                            buffer = ""
+                            for m in msg:
+                                if len(buffer) + len(m) >= 1900:
+                                    await self.bot.send_message(channel_obj, buffer)
+                                    await asyncio.sleep(1)
+                                    buffer = ""
+                                buffer += "\n" + m
+                            if buffer:
+                                await self.bot.send_message(channel_obj, buffer)
 
                 # Update LAST_PUBDATE
                 if new_pubdate:
