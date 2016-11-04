@@ -195,7 +195,7 @@ Sets various options
 ## SysInfo
 
 Displays CPU, memory, disk and network information for the machine running the bot.  
-Requires psutil for retreiving system info: `pip3 install psutil`
+Requires psutil to retrieve system info: `pip3 install psutil`
 
 ```[p]sysinfo ```
 
