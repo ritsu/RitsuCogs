@@ -7,13 +7,18 @@ import logging
 import asyncio
 import aiohttp
 import re
-import js2py
 from datetime import datetime
 
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
+
+try:  # check if js2py is installed
+    import js2py
+    js2pyAvailable = True
+except:
+    js2pyAvailable = False
 
 try:  # check if BeautifulSoup4 is installed
     from bs4 import BeautifulSoup
@@ -720,11 +725,17 @@ def check_files():
 
 
 def setup(bot):
-    if soupAvailable:
-        check_folders()
-        check_files()
-        n = TokyoTosho(bot)
-        bot.loop.create_task(n.check_rss())
-        bot.add_cog(n)
-    else:
+    # Check for beautifulsoup4
+    if not soupAvailable:
         raise RuntimeError("You need to run `pip3 install beautifulsoup4`")
+
+    # Check for js2py
+    if not js2pyAvailable:
+        raise RuntimeError("You need to run `pip3 install js2py`")
+
+    # Main
+    check_folders()
+    check_files()
+    n = TokyoTosho(bot)
+    bot.loop.create_task(n.check_rss())
+    bot.add_cog(n)
