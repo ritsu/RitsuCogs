@@ -461,9 +461,10 @@ class TokyoTosho:
                     if not match:
                         continue
                     for term in cat:
-                        if term.lower() == item.find("category").get_text().lower():
-                            break
                         match = False
+                        if term.lower() == item.find("category").get_text().lower():
+                            match = True
+                            break
                     if not match:
                         continue
 
@@ -504,6 +505,7 @@ class TokyoTosho:
                 await asyncio.sleep(self._get_config("check_interval"))
                 continue
             soup = result["soup"]
+            items = soup.find_all("item")
 
             # Iterate through alerts
             for i, alert in enumerate(self.alerts):
@@ -512,9 +514,7 @@ class TokyoTosho:
                 cat = set([k for k, v in self.cats.items() if str(v) in alert["CATEGORY"]])
                 last_pubdate = alert["LAST_PUBDATE"]
 
-                # Parse rss
-                items = soup.find_all("item")
-                result = ""
+                # Find matches
                 new_pubdate = ""
                 count = 0
                 msg = []
@@ -548,9 +548,10 @@ class TokyoTosho:
 
                     # Skip items that do not include at least one of the categories
                     for term in cat:
-                        if term.lower() == item.find("category").get_text().lower():
-                            break
                         match = False
+                        if term.lower() == item.find("category").get_text().lower():
+                            match = True
+                            break
                     if not match:
                         continue
 
@@ -574,15 +575,15 @@ class TokyoTosho:
 
                 # Alert channels
                 if msg:
+                    # Split items into chunks of 5 if necessary
+                    msgs = [msg[i:i + 5] for i in range(0, len(msg), 5)]
                     for channel in alert["CHANNELS"]:
                         channel_obj = self.bot.get_channel(channel)
-                        if channel_obj is None:
-                            continue
-                        can_speak = channel_obj.permissions_for(channel_obj.server.me).send_messages
-                        if channel_obj and can_speak:
-                            await self.bot.send_message(
-                                self.bot.get_channel(channel),
-                                "TokyoTosho RSS alert:\n{0}".format("\n".join(msg)))
+                        if channel_obj and channel_obj.permissions_for(channel_obj.server.me).send_messages:
+                            await self.bot.send_message(channel_obj, "TokyoTosho RSS alert:")
+                            for m in msgs:
+                                await self.bot.send_message(channel_obj, "\n".join(m))
+                                await asyncio.sleep(1)
 
                 # Update LAST_PUBDATE
                 if new_pubdate:
