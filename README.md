@@ -154,7 +154,7 @@ Requires js2py to access TokyoTosho behind CloudFlare: `pip3 install js2py`
 
 `[p]tt search [terms] [#category]`
 
-<b>terms</b> are normal searech terms. Prepend a "-" for exclusion terms.  
+<b>terms</b> are normal search terms. Prepend a "-" for exclusion terms.  
 <b>category</b> (optional) is one of the categories defined on TokyoTosho. Type `[p]tt cats` to see a list of valid categories.
 
 Example: `!tt search madoka rebellion -dub #anime`
