@@ -23,10 +23,11 @@ class GNU:
 
     def __init__(self, bot):
         self.bot = bot
+        self.command_prefix = bot.command_prefix[0]
 
         # chat log config
         self.config = dataIO.load_json(self.config_path)
-        self.config_default = {"active": False, "max_size": 1048576, "log_bot": False}
+        self.config_default = {"active": False, "max_size": 1048576, "log_bot": False, "log_commands": False}
 
         # Buffer when resizing log file to avoid too many resize operations
         self.log_buffer = 1024 * 100
@@ -343,11 +344,13 @@ class GNU:
         if not args:
             await self.bot.say("*clog* manages logging options for the current channel.")
             await self.bot.say("```"
-                               "\nclog [on|off]      Turn logging on or off for current channel."
-                               "\nclog size num      Set the maximum log size for current channel to num MiB."
-                               "\nclog bot [on|off]  Set whether or not bot logs its own messages."
-                               "\nclog status        Display log settings and status for current channel."
-                               "\nclog delete        Delete all logs for current channel."
+                               "\nclog [on|off]           Turn logging on or off for current channel."
+                               "\nclog size [num]         Set the maximum log size for current channel to num MiB."
+                               "\nclog bot [on|off]       Set whether or not bot logs its own messages."
+                               "\nclog commands [on|off]  Set whether or not bot logs bot commands "
+                               "(lines starting with \"" + self.command_prefix + "\")."
+                               "\nclog status             Display log settings and status for current channel."
+                               "\nclog delete             Delete all logs for current channel."
                                "```")
             return
 
@@ -373,17 +376,26 @@ class GNU:
             self._clog_set(cid, max_size=max_size)
             await self.bot.say("Chat log size set to `{0}`".format(self._size(max_size)))
         elif args[0].lower() == "bot":
-            if args[1].lower() == "on" or args[1].lower == "true":
+            if len(args) < 2 or args[1].lower() not in ("on", "true", "off", "false"):
+                await self.bot.say("Please specify 'on' or 'off'.")
+            elif args[1].lower() == "on" or args[1].lower() == "true":
                 self._clog_set(cid, log_bot=True)
                 await self.bot.say("Bot self log enabled.")
-            elif args[1].lower() == "off" or args[1].lower == "false":
+            elif args[1].lower() == "off" or args[1].lower() == "false":
                 self._clog_set(cid, log_bot=False)
                 await self.bot.say("Bot self log disabled.")
-            else:
+        elif args[0].lower() == "commands":
+            if len(args) < 2 or args[1].lower() not in ("on", "true", "off", "false"):
                 await self.bot.say("Please specify 'on' or 'off'.")
+            elif args[1].lower() == "on" or args[1].lower() == "true":
+                self._clog_set(cid, log_commands=True)
+                await self.bot.say("Bot command log enabled.")
+            elif args[1].lower() == "off" or args[1].lower() == "false":
+                self._clog_set(cid, log_commands=False)
+                await self.bot.say("Bot command log disabled.")
         elif args[0].lower() == "status":
             if cid in self.config:
-                c = self.config[cid]
+                c = self._clog_get(cid)
                 # Get current log size:
                 file = os.path.join(self.base_dir, sid, cid)
                 try:
@@ -393,8 +405,8 @@ class GNU:
                 max_size = self._size(c["max_size"])
                 # Display status
                 await self.bot.say(
-                    "Active: `{0[active]}`, Log bot: `{0[log_bot]}`, Max size: `{1}`, "
-                    "Current size: `{2}`".format(c, max_size, size))
+                    "Active: `{0[active]}`, Log bot: `{0[log_bot]}`, Log commands: `{0[log_commands]}`, "
+                    "Max size: `{1}`, Current size: `{2}`".format(c, max_size, size))
             else:
                 await self.bot.say("Chat log not setup for this channel.")
         elif args[0].lower() == "delete":
@@ -1434,11 +1446,15 @@ class GNU:
 
     async def message_logger(self, message):
         """Log message - Credit https://github.com/tekulvw/Squid-Plugins"""
+        config = self._clog_get(message.channel.id)
         # Do not log if logging is disabled for channel
-        if message.channel.id not in self.config or not self.config[message.channel.id]["active"]:
+        if not config["active"]:
             return
         # Do not log if message from bot and log_bot disabled
-        if message.author == self.bot.user and not self.config[message.channel.id]["log_bot"]:
+        if message.author == self.bot.user and not config["log_bot"]:
+            return
+        # Do not log if message is a command and log_commands disabled
+        if message.clean_content.startswith(self.command_prefix) and not config["log_commands"]:
             return
         # Log message
         self.log(message)
@@ -1483,6 +1499,18 @@ class GNU:
             message = ("{0} @{1.name}#{1.discriminator}: {2}\n".format(
                 timestamp, message.author, message.clean_content))
             f.write(message)
+
+    def _clog_get(self, cid):
+        """Get config options for channel"""
+
+        if cid not in self.config:
+            return self.config_default
+        else:
+            config = self.config[cid]
+            for k, v in self.config_default.items():
+                if k not in config:
+                    config[k] = v
+            return config
 
     def _clog_set(self, cid, **kwargs):
         """Set config options and save"""
