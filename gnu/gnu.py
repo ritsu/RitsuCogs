@@ -23,7 +23,6 @@ class GNU:
 
     def __init__(self, bot):
         self.bot = bot
-        self.command_prefix = bot.command_prefix[0]
 
         # chat log config
         self.config = dataIO.load_json(self.config_path)
@@ -348,7 +347,6 @@ class GNU:
                                "\nclog size [num]         Set the maximum log size for current channel to num MiB."
                                "\nclog bot [on|off]       Set whether or not bot logs its own messages."
                                "\nclog commands [on|off]  Set whether or not bot logs bot commands "
-                               "(lines starting with \"" + self.command_prefix + "\")."
                                "\nclog status             Display log settings and status for current channel."
                                "\nclog delete             Delete all logs for current channel."
                                "```")
@@ -1453,9 +1451,10 @@ class GNU:
         # Do not log if message from bot and log_bot disabled
         if message.author == self.bot.user and not config["log_bot"]:
             return
-        # Do not log if message is a command and log_commands disabled
-        if message.clean_content.startswith(self.command_prefix) and not config["log_commands"]:
-            return
+        # Do not log if log_commands disabled and message starts with command prefix
+        if not config["log_commands"]:
+            if [s for s in self.bot.settings.get_prefixes(message.server) if message.clean_content.startswith(s)]:
+                return
         # Log message
         self.log(message)
 
