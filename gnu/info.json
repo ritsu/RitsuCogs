@@ -2,5 +2,8 @@
     "AUTHOR" : "kagami#6142",
     "NAME" : "GNU",
     "SHORT" : "Some GNU inspired text utilities",
-    "DESCRIPTION" : "An attempt to emulate some common GNU text utilities.\nYou can pipe, e.g. \"[p]grep -i google http://news.google.com | wc\"\nYou can redirect output to pastebin, e.g. \"[p]cat @chat > chatlog\"\nA pastebin API key is required for pastebin redirect. Set it with \"[p]pastebin [api_key]\""
+    "DESCRIPTION" : "An attempt to emulate some common GNU text utilities.\nYou can pipe, e.g. \"[p]grep -i google http://news.google.com | wc\"\nYou can redirect output to pastebin, e.g. \"[p]cat @chat > chatlog\"\nA pastebin API key is required for pastebin redirect. Set it with \"[p]pastebin [api_key]\"",
+    "REQUIREMENTS": ["bs4"],
+    "TAGS" : ["utility", "tools", "logging", "search", "gnu"],
+    "DISABLED" : false
 }
