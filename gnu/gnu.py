@@ -564,18 +564,18 @@ class GNU:
             if 'c' in option:
                 continue
             # display previous context if necessary
-            if 'A' in option or 'C' in option:
-                ia = (i - option_num['A'] - option_num['C']) if (i - option_num['A'] - option_num['C']) >= 0 else 0
-                for a, aline in enumerate(stdin[ia:i]):
-                    if (ia + a) not in display_nums:
-                        line_num = a + 1 if 'n' in option else None
-                        result = await self._say(aline, display_count, ctx.message.author, True, buffer,
+            if 'B' in option or 'C' in option:
+                ib = (i - option_num['B'] - option_num['C']) if (i - option_num['B'] - option_num['C']) >= 0 else 0
+                for b, bline in enumerate(stdin[ib:i]):
+                    if (ib + b) not in display_nums:
+                        line_num = b + 1 if 'n' in option else None
+                        result = await self._say(bline, display_count, ctx.message.author, True, buffer,
                                                  pipe_out=pipe_out, line_num=line_num, num_width=num_width)
                         if result == -1:
                             await self._flush_buffer(display_count, ctx.message.author, True, buffer, False)
                             return
                         display_count += result
-                        display_nums.add(ia + a)
+                        display_nums.add(ib + b)
             # display line
             line_num = i + 1 if 'n' in option else None
             if i not in display_nums:
@@ -587,18 +587,18 @@ class GNU:
                 display_count += result
                 display_nums.add(i)
             # display additional context if necessary
-            if 'B' in option or 'C' in option:
-                ib = i + option_num['B'] + option_num['C'] + 1
-                for b, bline in enumerate(stdin[(i + 1):ib]):
-                    if (i + 1 + b) not in display_nums:
-                        line_num = b + 1 if 'n' in option else None
-                        result = await self._say(bline, display_count, ctx.message.author, True, buffer,
+            if 'A' in option or 'C' in option:
+                ia = i + option_num['A'] + option_num['C'] + 1
+                for a, aline in enumerate(stdin[(i + 1):ia]):
+                    if (i + 1 + a) not in display_nums:
+                        line_num = a + 1 if 'n' in option else None
+                        result = await self._say(aline, display_count, ctx.message.author, True, buffer,
                                                  pipe_out=pipe_out, line_num=line_num, num_width=num_width)
                         if result == -1:
                             await self._flush_buffer(display_count, ctx.message.author, True, buffer, False)
                             return
                         display_count += result
-                        display_nums.add(i + 1 + b)
+                        display_nums.add(i + 1 + a)
             # stop if m option set and limit reached
             if 'm' in option and match_count >= option_num['m']:
                 break
