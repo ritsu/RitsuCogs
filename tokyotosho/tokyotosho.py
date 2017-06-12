@@ -22,6 +22,7 @@ except:
 
 try:  # check if BeautifulSoup4 is installed
     from bs4 import BeautifulSoup
+    from bs4 import CData
     soupAvailable = True
 except:
     soupAvailable = False
@@ -487,7 +488,7 @@ class TokyoTosho:
                         description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
                         title,
-                        item.find("link").get_text(),
+                        item.find(text=lambda tag: isinstance(tag, CData)).string.strip(),
                         item.find("pubdate").get_text(),
                         item.find("category").get_text(),
                         description
@@ -583,7 +584,7 @@ class TokyoTosho:
                         description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
                         title,
-                        item.find("link").get_text(),
+                        item.find(text=lambda tag: isinstance(tag, CData)).string.strip(),
                         item.find("pubdate").get_text(),
                         item.find("category").get_text(),
                         description
