@@ -1,6 +1,7 @@
 # RitsuCogs
 
-Some /usr/bin and anime related cogs for <a href="https://github.com/Twentysix26/Red-DiscordBot">Red-DiscordBot</a>. If you need help or want to chat, visit my <a href="https://discord.gg/25w9hKX">Discord channel</a>.
+Some /usr/bin and anime related cogs for <a href="https://github.com/Twentysix26/Red-DiscordBot">Red-DiscordBot</a>. If you need help or want to chat, visit my <a href="https://discord.gg/25w9hKX">Discord server</a> or the official <a href="https://discord.gg/SzUq8fy
+">Red Cogs Support server</a> and mention @kagami#6142.
 
 Add repo: ```[p]cog repo add ritsu-cogs https://github.com/ritsu/RitsuCogs```
 
