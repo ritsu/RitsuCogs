@@ -483,7 +483,7 @@ class TokyoTosho:
                     found = True
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
-                    description = " | ".join([description[1], description[2], description[4]])
+                    description = " | ".join([description[3], description[4], description[5]]).replace("\n", "")
                     if len(description) > self._get_config("comment_length")-30:
                         description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
@@ -579,7 +579,7 @@ class TokyoTosho:
 
                     # Get item message
                     description = item.find("description").get_text().split("<br />")
-                    description = " | ".join([description[1], description[2], description[4]])
+                    description = " | ".join([description[3], description[4], description[5]]).replace("\n", "")
                     if len(description) > self._get_config("comment_length")-30:
                         description = description[:self._get_config("comment_length")-27] + "..."
                     msg.append("**{0}** :: {1}\n{2} | {3} | {4}".format(
