@@ -59,11 +59,10 @@ class SysInfo:
         open_f = psutil.Process().open_files()
         open_fs = "Open File Handles\n\t"
         if open_f:
-            common = os.path.commonpath([f.path for f in open_f])
             if hasattr(open_f[0], "mode"):
-                open_fs += "\n\t".join(["{0} [{1}]".format(f.path.replace(common, '.'), f.mode) for f in open_f])
+                open_fs += "\n\t".join(["{0} [{1}]".format(f.path, f.mode) for f in open_f])
             else:
-                open_fs += "\n\t".join(["{0}".format(f.path.replace(common, '.')) for f in open_f])
+                open_fs += "\n\t".join(["{0}".format(f.path) for f in open_f])
         else:
             open_fs += "None"
 
