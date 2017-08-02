@@ -21,7 +21,19 @@ class SysInfo:
     @commands.command(name='sysinfo')
     @checks.is_owner()
     async def psutil(self, *args: str):
-        """Show CPU, Memory, Disk, and Network information"""
+        """Show CPU, Memory, Disk, and Network information
+
+         Usage: sysinfo [option]
+
+         Examples:
+             sysinfo           Shows all available info
+             sysinfo cpu       Shows CPU usage
+             sysinfo memory    Shows memory usage
+             sysinfo file      Shows full path of open files
+             sysinfo disk      Shows disk usage
+             sysinfo network   Shows network usage
+             sysinfo boot      Shows boot time
+         """
 
         # CPU
         cpu_cs = ("CPU Count"
