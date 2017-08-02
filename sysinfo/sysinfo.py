@@ -6,20 +6,21 @@ from datetime import datetime
 
 try:
     import psutil
-    psutilAvailable = True
-except:
-    psutilAvailable = False
+except Exception as e:
+    raise RuntimeError("You must run `pip3 install psutil` to use this cog") from e
 
 
 class SysInfo:
     """Display CPU, Memory, Disk and Network information"""
+
+    options = ('cpu', 'memory', 'file', 'disk', 'network', 'boot')
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name='sysinfo')
     @checks.is_owner()
-    async def psutil(self):
+    async def psutil(self, *args: str):
         """Show CPU, Memory, Disk, and Network information"""
 
         # CPU
@@ -87,9 +88,23 @@ class SysInfo:
                   "\n\t{0}".format(datetime.fromtimestamp(
                        psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S")))
 
-        await self.bot.say("```" +
-                           "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s]) +
-                           "```")
+        # Output
+        if not args or args[0].lower() not in self.options:
+            await self.bot.say("```\n" +
+                               "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s]) +
+                               "```")
+        elif args[0].lower() == 'cpu':
+            await self.bot.say("```\n" + "\n\n".join([cpu_cs, cpu_ps, cpu_ts]) + "```")
+        elif args[0].lower() == 'memory':
+            await self.bot.say("```\n" + "\n\n".join([mem_vs, mem_ss]) + "```")
+        elif args[0].lower() == 'file':
+            await self.bot.say("```\n" + open_fs + "```")
+        elif args[0].lower() == 'disk':
+            await self.bot.say("```\n" + disk_us + "```")
+        elif args[0].lower() == 'network':
+            await self.bot.say("```\n" + net_ios + "```")
+        elif args[0].lower() == 'boot':
+            await self.bot.say("```\n" + boot_s + "```")
 
         return
 
@@ -102,8 +117,5 @@ class SysInfo:
 
 
 def setup(bot):
-    if psutilAvailable:
-        n = SysInfo(bot)
-        bot.add_cog(n)
-    else:
-        raise RuntimeError("You need to run 'pip3 install psutil'")
+    n = SysInfo(bot)
+    bot.add_cog(n)
