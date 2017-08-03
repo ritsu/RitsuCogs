@@ -36,9 +36,12 @@ class SysInfo:
          """
 
         # CPU
+        cpu_count_p = psutil.cpu_count(logical=False)
+        cpu_count_l = psutil.cpu_count()
+        if cpu_count_p == None : cpu_count_p = "N/A"
         cpu_cs = ("CPU Count"
-                  "\n\t{0:<9}: {1:>2}".format("Physical", psutil.cpu_count(logical=False)) +
-                  "\n\t{0:<9}: {1:>2}".format("Logical", psutil.cpu_count()))
+                  "\n\t{0:<9}: {1:>3}".format("Physical", cpu_count_p) +
+                  "\n\t{0:<9}: {1:>3}".format("Logical", cpu_count_l))        
         psutil.cpu_percent(interval=None, percpu=True)
         await asyncio.sleep(1)
         cpu_p = psutil.cpu_percent(interval=None, percpu=True)
