@@ -200,7 +200,7 @@ Requires psutil to retrieve system info: `pip3 install psutil`
 
 ```[p]sysinfo ```
 
-Shows the following information:
+Shows a summary of the following information:
 - CPU Count
 - CPU Usage
 - CPU Times
@@ -210,3 +210,48 @@ Shows the following information:
 - Disk Usage
 - Network Bytes Sent/Recv
 - Boot Time
+
+```[p]df ```
+
+Shows file system disk space usage (aka df -h)
+
+```[p]free ```
+
+Shows amount of free and used memory in the system
+
+```[p]ifconfig ```
+
+Shows network interface information
+
+```[p]iotop ```
+
+Shows a snapshot of the 'iotop' command
+
+```[p]meminfo ```
+
+Shows system memory information
+
+```[p]netstat ```
+
+A clone of 'netstat -antp'
+
+```[p]nettop ```
+
+Shows current snapshot of network statistics
+
+```[p]smem ```
+
+This is similar to 'smem' utility
+
+```[p]ps ```
+
+A clone of 'ps -aux'
+
+```[p]top ```
+
+Shows a snapshot of processes and system related info
+
+```[p]who ```
+
+Shows which users are currently logged in
+
