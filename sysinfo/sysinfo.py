@@ -25,7 +25,7 @@ class SysInfo:
     @commands.command(pass_context=True, name='sysinfo')
     @checks.is_owner()
     async def psutil(self, ctx, *args: str):
-        """Show CPU, Memory, Disk, and Network information
+        """Shows a summary of cpu, memory, disk, and network information
          Usage: sysinfo [option]
          Examples:
              sysinfo           Shows all available info
@@ -128,7 +128,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="df")
     @checks.is_owner()
     async def psutil_df(self, ctx):
-        """Shows file system disk space usage (aka df -h)"""
+        """File system disk space usage (aka 'df -h')"""
 
         template = "\n{0:<16} {1:>9} {2:>9} {3:>9} {4:>9}% {5:>9}  {6}"
         msg = template.format("Device", "Total", "Used", "Free", "Used ", "Type", "Mount")
@@ -153,7 +153,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="free")
     @checks.is_owner()
     async def psutil_free(self, ctx):
-        """Shows amount of free and used memory in the system"""
+        """Amount of free and used memory in the system (aka 'free')"""
 
         virt = psutil.virtual_memory()
         swap = psutil.swap_memory()
@@ -183,7 +183,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="ifconfig")
     @checks.is_owner()
     async def psutil_ifconfig(self, ctx):
-        """Shows network interface information"""
+        """Network interface information (aka 'ifconfig')"""
 
         af_map = {
             socket.AF_INET: 'IPv4',
@@ -234,7 +234,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="iotop")
     @checks.is_owner()
     async def psutil_iotop(self, ctx):
-        """Shows a snapshot of the 'iotop' command"""
+        """Snapshot of I/O usage information output by the kernel (aka 'iotop')"""
 
         if not hasattr(psutil.Process, "oneshot") :
             await self.bot.say("Platform not supported")
@@ -301,7 +301,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="meminfo")
     @checks.is_owner()
     async def psutil_meminfo(self, ctx):
-        """Shows system memory information"""
+        """System memory information"""
 
         msg = "\nMEMORY\n------\n"
         msg += "{0}\n".format(self._sprintf_ntuple(psutil.virtual_memory()))
@@ -313,7 +313,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="netstat")
     @checks.is_owner()
     async def psutil_netstat(self, ctx):
-        """A clone of 'netstat -antp'"""
+        """Information about the networking subsystem (aka 'netstat -antp')"""
 
         AD = "-"
         AF_INET6 = getattr(socket, 'AF_INET6', object())
@@ -352,7 +352,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="nettop")
     @checks.is_owner()
     async def psutil_nettop(self, ctx):
-        """Shows current snapshot of network statistics"""
+        """Snapshot of real-time network statistics"""
 
         # Retrieve raw stats within an interval window
         tot_before = psutil.net_io_counters()
@@ -408,7 +408,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="smem")
     @checks.is_owner()
     async def psutil_smem(self, ctx):
-        """This is similar to 'smem' utility"""
+        """Physical memory usage, taking shared memory pages into account (aka 'smem')"""
 
         if not (psutil.LINUX or psutil.OSX or psutil.WINDOWS):
             await self.bot.say("Platform not supported")
@@ -461,7 +461,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="ps")
     @checks.is_owner()
     async def psutil_ps(self, ctx):
-        """A clone of 'ps -aux'"""
+        """Information about active processes ('ps -aux')"""
 
         PROC_STATUSES_RAW = {
             psutil.STATUS_RUNNING: "R",
@@ -545,7 +545,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="top")
     @checks.is_owner()
     async def psutil_top(self, ctx):
-        """A clone of top / htop"""
+        """Snapshot of real-time system information and tasks (aka 'top')"""
 
         # sleep some time
         psutil.cpu_percent(interval=None, percpu=True)
@@ -663,7 +663,7 @@ class SysInfo:
     @commands.command(pass_context=True, name="who")
     @checks.is_owner()
     async def psutil_who(self, ctx):
-        """Shows which users are currently logged in"""
+        """Shows which users are currently logged in (aka 'who')"""
 
         msg = ""
         users = psutil.users()
