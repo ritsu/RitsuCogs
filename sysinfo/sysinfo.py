@@ -103,10 +103,11 @@ class SysInfo:
 
         # Boot time
         boot_s = ("Boot Time"
-                  "\n\t{0}".format(datetime.fromtimestamp(
+                  "\n\t{0}".format(datetime.datetime.fromtimestamp(
             psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S")))
 
         # Output
+        msg = ""
         if not args or args[0].lower() not in self.options:
             msg = "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s])
         elif args[0].lower() == 'cpu':
