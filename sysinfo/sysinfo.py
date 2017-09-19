@@ -111,17 +111,17 @@ class SysInfo:
         if not args or args[0].lower() not in self.options:
             msg = "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s])
         elif args[0].lower() == 'cpu':
-            msg = "```\n" + "\n\n".join([cpu_cs, cpu_ps, cpu_ts]) + "```"
+            msg = "\n" + "\n\n".join([cpu_cs, cpu_ps, cpu_ts])
         elif args[0].lower() == 'memory':
-            msg = "```\n" + "\n\n".join([mem_vs, mem_ss]) + "```"
+            msg = "\n" + "\n\n".join([mem_vs, mem_ss])
         elif args[0].lower() == 'file':
-            msg = "```\n" + open_fs + "```"
+            msg = "\n" + open_fs
         elif args[0].lower() == 'disk':
-            msg = "```\n" + disk_us + "```"
+            msg = "\n" + disk_us
         elif args[0].lower() == 'network':
-            msg = "```\n" + net_ios + "```"
+            msg = "\n" + net_ios
         elif args[0].lower() == 'boot':
-            msg = "```\n" + boot_s + "```"
+            msg = "\n" + boot_s
         await self._say(ctx, msg)
         return
 
