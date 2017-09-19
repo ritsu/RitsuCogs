@@ -17,18 +17,34 @@ except:
 class SysInfo:
     """Display CPU, Memory, Disk and Network information"""
 
+    options = ('cpu', 'memory', 'file', 'disk', 'network', 'boot')
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(pass_context=True, name='sysinfo')
     @checks.is_owner()
-    async def psutil(self, ctx):
-        """Show CPU, Memory, Disk, and Network information"""
+    async def psutil(self, ctx, *args: str):
+        """Show CPU, Memory, Disk, and Network information
+         Usage: sysinfo [option]
+         Examples:
+             sysinfo           Shows all available info
+             sysinfo cpu       Shows CPU usage
+             sysinfo memory    Shows memory usage
+             sysinfo file      Shows full path of open files
+             sysinfo disk      Shows disk usage
+             sysinfo network   Shows network usage
+             sysinfo boot      Shows boot time
+         """
 
         # CPU
+        cpu_count_p = psutil.cpu_count(logical=False)
+        cpu_count_l = psutil.cpu_count()
+        if cpu_count_p is None:
+            cpu_count_p = "N/A"
         cpu_cs = ("CPU Count"
-                  "\n\t{0:<9}: {1:>2}".format("Physical", psutil.cpu_count(logical=False)) +
-                  "\n\t{0:<9}: {1:>2}".format("Logical", psutil.cpu_count()))
+                  "\n\t{0:<9}: {1:>3}".format("Physical", cpu_count_p) +
+                  "\n\t{0:<9}: {1:>3}".format("Logical", cpu_count_l))
         psutil.cpu_percent(interval=None, percpu=True)
         await asyncio.sleep(1)
         cpu_p = psutil.cpu_percent(interval=None, percpu=True)
@@ -62,8 +78,10 @@ class SysInfo:
         open_f = psutil.Process().open_files()
         open_fs = "Open File Handles\n\t"
         if open_f:
-            common = os.path.commonpath([f.path for f in open_f])
-            open_fs += "\n\t".join(["{0} [{1}]".format(f.path.replace(common, '.'), f.mode) for f in open_f])
+            if hasattr(open_f[0], "mode"):
+                open_fs += "\n\t".join(["{0} [{1}]".format(f.path, f.mode) for f in open_f])
+            else:
+                open_fs += "\n\t".join(["{0}".format(f.path) for f in open_f])
         else:
             open_fs += "None"
 
@@ -88,7 +106,22 @@ class SysInfo:
                   "\n\t{0}".format(datetime.datetime.fromtimestamp(
             psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S")))
 
-        msg = "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s])
+        # Output
+        msg = ""
+        if not args or args[0].lower() not in self.options:
+            msg = "\n\n".join([cpu_cs, cpu_ps, cpu_ts, mem_vs, mem_ss, open_fs, disk_us, net_ios, boot_s])
+        elif args[0].lower() == 'cpu':
+            msg = "\n" + "\n\n".join([cpu_cs, cpu_ps, cpu_ts])
+        elif args[0].lower() == 'memory':
+            msg = "\n" + "\n\n".join([mem_vs, mem_ss])
+        elif args[0].lower() == 'file':
+            msg = "\n" + open_fs
+        elif args[0].lower() == 'disk':
+            msg = "\n" + disk_us
+        elif args[0].lower() == 'network':
+            msg = "\n" + net_ios
+        elif args[0].lower() == 'boot':
+            msg = "\n" + boot_s
         await self._say(ctx, msg)
         return
 
