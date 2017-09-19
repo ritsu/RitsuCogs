@@ -162,7 +162,11 @@ class SysInfo:
             psutil.NIC_DUPLEX_HALF: "half",
             psutil.NIC_DUPLEX_UNKNOWN: "?",
         }
-        stats = psutil.net_if_stats()
+        try:
+            stats = psutil.net_if_stats()
+        except:
+            await self.bot.say("Unable to access network information. Perhaps insufficient permissions?")
+            return
         io_counters = psutil.net_io_counters(pernic=True)
         msg = ""
         for nic, addrs in psutil.net_if_addrs().items():
