@@ -206,43 +206,43 @@ Shows a summary of cpu, memory, disk and network information
 
 Shows file system disk space usage, similar to "df -h" on linux
 
-```[p]free ```
+```[p]sys free ```
 
 Shows amount of free and used memory in the system, similar to "free" on linux
 
-```[p]ifconfig ```
+```[p]sys ifconfig ```
 
 Shows network interface information, similar to "ifconfig" on linux
 
-```[p]iotop ```
+```[p]sys iotop ```
 
 Shows I/O usage information output by the kernel, like a snapshot of "iotop" on linux
 
-```[p]meminfo ```
+```[p]sys meminfo ```
 
 Shows system memory information
 
-```[p]netstat ```
+```[p]sys netstat ```
 
 Shows information about the networking subsystem, similar to "netstat -antp" on linux
 
-```[p]nettop ```
+```[p]sys nettop ```
 
 Shows a snapshot of real-time network statistics
 
-```[p]smem ```
+```[p]sys smem ```
 
 Shows physical memory usage, taking shared memory pages into account, similar to "smem" on linux
 
-```[p]ps ```
+```[p]sys ps ```
 
 Shows information about active processes, similar to "ps -aux" on linux
 
-```[p]top ```
+```[p]sys top ```
 
 Shows real-time system information and tasks, like a snapshot of "top" on linux
 
-```[p]who ```
+```[p]sys who ```
 
 Shows which users are currently logged in, similar to "who" on linux
 
