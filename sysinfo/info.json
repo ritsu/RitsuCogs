@@ -5,5 +5,6 @@
     "DESCRIPTION" : "Uses psutil to display cpu, memory, disk and network information",
     "REQUIREMENTS": ["psutil"],
     "TAGS" : ["utility", "tools", "system", "info"],
+    "INSTALL_MSG" : "Commands are now in p[sysinfo|sys] group. E.g. [p]sys info, [p]sys df, [p]sys top, etc.",
     "DISABLED" : false
 }
