@@ -195,37 +195,28 @@ Sets various options
 
 ## SysInfo
 
-Displays CPU, memory, disk and network information for the machine running the bot.  
+A set of commands that display system information for the machine running the bot.
 Requires psutil to retrieve system info: `pip3 install psutil`
 
-```[p]sysinfo ```
+```[p]sys info ```
 
-Shows a summary of the following information:
-- CPU Count
-- CPU Usage
-- CPU Times
-- Virtual Memory
-- Swap Memory
-- Open File Handles
-- Disk Usage
-- Network Bytes Sent/Recv
-- Boot Time
+Shows a summary of cpu, memory, disk and network information
 
-```[p]df ```
+```[p]sys df ```
 
-Shows file system disk space usage (aka df -h)
+Shows file system disk space usage, similar to "df -h" on linux
 
 ```[p]free ```
 
-Shows amount of free and used memory in the system
+Shows amount of free and used memory in the system, similar to "free" on linux
 
 ```[p]ifconfig ```
 
-Shows network interface information
+Shows network interface information, similar to "ifconfig" on linux
 
 ```[p]iotop ```
 
-Shows a snapshot of the 'iotop' command
+Shows I/O usage information output by the kernel, like a snapshot of "iotop" on linux
 
 ```[p]meminfo ```
 
@@ -233,25 +224,25 @@ Shows system memory information
 
 ```[p]netstat ```
 
-A clone of 'netstat -antp'
+Shows information about the networking subsystem, similar to "netstat -antp" on linux
 
 ```[p]nettop ```
 
-Shows current snapshot of network statistics
+Shows a snapshot of real-time network statistics
 
 ```[p]smem ```
 
-This is similar to 'smem' utility
+Shows physical memory usage, taking shared memory pages into account, similar to "smem" on linux
 
 ```[p]ps ```
 
-A clone of 'ps -aux'
+Shows information about active processes, similar to "ps -aux" on linux
 
 ```[p]top ```
 
-Shows a snapshot of processes and system related info
+Shows real-time system information and tasks, like a snapshot of "top" on linux
 
 ```[p]who ```
 
-Shows which users are currently logged in
+Shows which users are currently logged in, similar to "who" on linux
 
