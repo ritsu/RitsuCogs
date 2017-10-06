@@ -253,15 +253,17 @@ Picks random users from your server, or from a supplied list of names
 ```[p]pick [num] [roles] online notafk```
 
 Pick random users from the current server.
-
-`[num]` Number of users to pick
-`[roles]` Picked users must have these roles (-roles to exclude)
-`online` Picked users must be online
-`notafk` Picked users must be not-afk (and also online)
+```
+[num]    Number of users to pick
+[roles]  Picked users must have these roles (-roles to exclude)
+online   Picked users must be online
+notafk   Picked users must be not-afk (and also online)
+```
 
 ```[p]pickfrom [names] [num]```
 
 Pick random names from supplised list of names
-
-`[names]` List of names to pick from
-`[num]` Number of names to pick
+```
+[names]  List of names to pick from
+[num]    Number of names to pick
+```
