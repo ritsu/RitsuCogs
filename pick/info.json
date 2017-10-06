@@ -1,0 +1,9 @@
+{
+  "AUTHOR" : "kagami#6142",
+  "NAME" : "Pick",
+  "SHORT" : "Pick random users from your server",
+  "DESCRIPTION" : "Picks random users from your discord server. Can pick more than one, specify roles, and limit to online and not-afk users",
+  "TAGS" : ["pick", "random", "users", "giveaway", "raffle"],
+  "INSTALL_MSG" : "Thank you for installing Pick from RitsuCogs.\nCommands: [p]pick, [p]pickfrom",
+  "DISABLED" : false
+}
