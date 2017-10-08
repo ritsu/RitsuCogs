@@ -40,10 +40,15 @@ class Pick:
                 online = True
             elif term.lower() == "notafk":
                 not_afk = True
-            elif term[0] == "-":
-                exclude.add(term[1:].lower())
             else:
-                include.add(term)
+                role = term[1:] if term.startswith('-') else term
+                if role not in (r.name for r in ctx.message.server.roles):
+                    await self.bot.say("Role `{}` not found on server".format(role))
+                    return
+                if term.startswith('-'):
+                    exclude.add(role)
+                else:
+                    include.add(role)
 
         # Build list of eligible members
         members = []
@@ -54,7 +59,7 @@ class Pick:
                 continue
             if m.bot:
                 continue
-            roles = set([r.name.lower() for r in m.roles])
+            roles = set([r.name for r in m.roles])
             if len(include) > 0 and len(include.intersection(roles)) == 0:
                 continue
             if len(exclude) > 0 and len(exclude.intersection(roles)) > 0:
@@ -70,7 +75,6 @@ class Pick:
         # Build Embed
         names = "\n".join(["[**{}**]({})".format(p.display_name, p.avatar_url) for p in picked])
         ids = "\n".join([str(p) for p in picked])
-
         embed = discord.Embed(colour=ctx.message.author.colour)
         embed.title = "Picked {} user{}".format(num, "s" if num > 1 else "")
         embed.add_field(name="Name", value=names)
