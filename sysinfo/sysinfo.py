@@ -679,6 +679,8 @@ class SysInfo:
                 datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
                 "(%s)" % user.host if user.host else "",
                 proc_name)
+        if not msg:
+            msg = "No users logged in"
         await self._say(ctx, msg)
         return
 

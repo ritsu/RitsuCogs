@@ -2,9 +2,9 @@
     "AUTHOR" : "kagami#6142",
     "NAME" : "SysInfo",
     "SHORT" : "Display system information",
-    "DESCRIPTION" : "Uses psutil to display cpu, memory, disk and network information",
+    "DESCRIPTION" : "Uses psutil to show various system information for the machine running the bot",
     "REQUIREMENTS": ["psutil"],
     "TAGS" : ["utility", "tools", "system", "info"],
-    "INSTALL_MSG" : "Commands are now in p[sysinfo|sys] group. E.g. [p]sys info, [p]sys df, [p]sys top, etc.",
+    "INSTALL_MSG" : "Thank you for installing SysInfo from RitsuCogs.\nCommands are in [sysinfo|sys] group. [p]help sys",
     "DISABLED" : false
 }
