@@ -17,13 +17,13 @@ class Pick:
             pick          Pick 1 random user
             pick 5        Pick 5 random users
             pick online   Pick 1 random online user
-            pick notafk   Pick 1 random not-afk user
+            pick notafk   Pick 1 random online user who is not idle, dnd, or invis
             pick myrole   Pick 1 random user who has role "myrole"
             pick -myrole  Pick 1 random user who does not have role "myrole"
         Using multiple options (order does not matter):
             pick 2 online             Pick 2 online users
             pick 3 mods               Pick 3 mods
-            pick 4 notafk subs -mods  Pick 4 not-afk subs who are not mods
+            pick 4 notafk subs -mods  Pick 4 subs who are not mods and are online and not idle, dnd, or invis
             pick sub fam -mod -admin  Pick 1 user who is either sub or fam, but not mod or admin
         """
 
@@ -55,7 +55,7 @@ class Pick:
         for m in ctx.message.server.members:
             if online and m.status == m.status.offline:
                 continue
-            if not_afk and (m.status == m.status.offline or m.is_afk):
+            if not_afk and (m.status in [m.status.offline, m.status.idle, m.status.dnd, m.status.invisible]):
                 continue
             if m.bot:
                 continue
