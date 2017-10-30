@@ -210,8 +210,8 @@ class Pick:
         if len(events) > 0:
             embed.add_field(name="Event", value="\n".join(["**{}**".format(e.name) for e in events]))
             embed.add_field(name="Remaining", value="\n".join([self._seconds_to_hms(e.time_left()) for e in events]))
-            embed.add_field(name="Creator", value="\n".join(["[**{}**]({}) in _{} #{}_".format(
-                e.author.display_name, e.author.avatar_url, e.channel.server.name, e.channel.name) for e in events]))
+            embed.add_field(name="Creator", value="\n".join(["[**{}**]({}) in _#{}_".format(
+                e.author.display_name, e.author.avatar_url, e.channel.name) for e in events]))
         else:
             embed.description = "None"
         await self.bot.send_message(ctx.message.channel, embed=embed)
