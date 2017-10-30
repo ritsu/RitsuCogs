@@ -74,10 +74,9 @@ class PickEvent:
             return False
         if len(self.roles["exclude"]) > 0 and len(self.roles["exclude"].intersection(roles)) > 0:
             return False
-        statuses = set([s.value for s in discord.enums.Status])
-        if len(self.statuses["include"]) > 0 and len(self.statuses["include"].intersection(statuses)) == 0:
+        if len(self.statuses["include"]) > 0 and member.status.value not in self.statuses["include"]:
             return False
-        if len(self.statuses["exclude"]) > 0 and len(self.statuses["exclude"].intersection(statuses)) > 0:
+        if len(self.statuses["exclude"]) > 0 and member.status.value in self.statuses["exclude"]:
             return False
         return True
 
