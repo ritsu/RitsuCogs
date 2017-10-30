@@ -248,22 +248,65 @@ Shows which users are currently logged in, similar to "who" on linux
 
 ## Pick
 
-Picks random users from your server, or from a supplied list of names
+Pick random users from your channel. 
+Use this to perform giveaways, raffles, and other types of contests.
+Can instantly pick from members currently in channel, 
+or create an "event" users can enter by typing a keyword in chat.
 
-```[p]pick [num] [roles] online notafk```
-
-Pick random users from the current server.
+###pick
+Pick random users instantly from the channel (ignores bots)
 ```
-[num]    Number of users to pick
-[roles]  Picked users must have these roles (-roles to exclude)
-online   Picked users must be online
-notafk   Picked users must be not-afk (and also online)
+[p]pick [num] +[role] -[role] +[status] -[status]
+
+Description:
+  num     Number of users to pick (default is 1)
+  +role   Users must have at least one of these roles
+  -role   Users cannot have any of these roles
+  +status Users must have at least one of these statuses
+  -status Users cannot have any of these statuses
+  
+Examples:
+  pick 2
+  pick 3 +mod +online
+  pick 3 +sub +patreon -mod -admin -offline -invisible
 ```
 
-```[p]pickfrom [names] [num]```
-
-Pick random names from supplised list of names
+###pickfor
+Create a pick event users can enter by typing the name of the event in chat
 ```
-[names]  List of names to pick from
-[num]    Number of names to pick
+[p]pickfor <event> <duration> [num] +[role] -[role]
+
+Description:
+  event    Name of the event
+  duration How long event will last before bot picks winners
+           Duration is any number followed by 's', 'm', or 'h'
+  num      Number of users to pick (default is 1)
+  +role    Users must have at least one of these roles
+  -role    Users cannot have any of these roles
+
+Examples:
+  pickfor raffle 60s 2
+  pickfor giveaway 24h 3
+  pickfor myteam 2m 4 +mod +sub
+```
+
+###pickfrom
+Pick from a list of names
+```
+[p]pickfrom <names> [num]
+
+Description:
+    pickfrom a b c     Pick 1 from a, b, c
+    pickfrom a b c 2   Pick 2 from a, b, c
+```
+
+###picks
+View and manage live pick events
+```
+Commands:
+  check  Check if you are entered into any pick events. 
+  delete Delete a pick event you created
+  force  Force the bot to pick for an event you created
+  list   List all currently running pick events on this server
+  show   Show details about a pick event
 ```
