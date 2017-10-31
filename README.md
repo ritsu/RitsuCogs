@@ -253,7 +253,7 @@ Use this to perform giveaways, raffles, and other types of contests.
 Can instantly pick from members currently in channel, 
 or create an "event" users can enter by typing a keyword in chat.
 
-###pick
+### pick
 Pick random users instantly from the channel (ignores bots)
 ```
 [p]pick [num] +[role] -[role] +[status] -[status]
@@ -271,7 +271,7 @@ Examples:
   pick 3 +sub +patreon -mod -admin -offline -invisible
 ```
 
-###pickfor
+### pickfor
 Create a pick event users can enter by typing the name of the event in chat
 ```
 [p]pickfor <event> <duration> [num] +[role] -[role]
@@ -290,7 +290,7 @@ Examples:
   pickfor myteam 2m 4 +mod +sub
 ```
 
-###pickfrom
+### pickfrom
 Pick from a list of names
 ```
 [p]pickfrom <names> [num]
@@ -300,7 +300,7 @@ Description:
     pickfrom a b c 2   Pick 2 from a, b, c
 ```
 
-###picks
+### picks
 View and manage live pick events
 ```
 Commands:
