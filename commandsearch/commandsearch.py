@@ -10,13 +10,9 @@ class CommandSearch:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, aliases=["cmds", "coms"])
-    async def commandsearch(self, ctx, search_string: str):
+    @commands.command(aliases=["cmds", "coms"])
+    async def commandsearch(self, search_string: str):
         """Search commands"""
-        if search_string is None:
-            await send_cmd_help(ctx)
-            return
-
         # Build commands list
         commands_flat = {}
         for k, v in self.bot.commands.items():
