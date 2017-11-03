@@ -315,7 +315,7 @@ Commands:
 
 Search for commands on your bot.
 
-###commandsearch | cmds | coms
+### commandsearch | cmds | coms
 ```
 [p]commandsearch|cmds|coms <search_string>
 ```
