@@ -1,0 +1,9 @@
+{
+  "AUTHOR" : "kagami#6142",
+  "NAME" : "CommandSearch",
+  "SHORT" : "Search for commands",
+  "DESCRIPTION" : "Cannot remember the name of that command and too lazy to use help? Use this cog to search for it.",
+  "TAGS" : ["command", "cmd", "search"],
+  "INSTALL_MSG" : "Thank you for installing CommandSearch from RitsuCogs.\nCommands: [p]commandsearch|cmds|coms",
+  "DISABLED" : false
+}
