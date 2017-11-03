@@ -310,3 +310,12 @@ Commands:
   list   List all currently running pick events on this server
   show   Show details about a pick event
 ```
+
+## CommandSearch
+
+Search for commands on your bot.
+
+###commandsearch | cmds | coms
+```
+[p]commandsearch|cmds|coms <search_string>
+```
