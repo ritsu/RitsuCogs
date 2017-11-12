@@ -673,7 +673,7 @@ class SysInfo:
             proc_name = ""
             if hasattr(user, "pid"):
                 proc_name = psutil.Process(user.pid).name()
-            msg += "{0:<12} {1:<10} {2:<10} {3:<14} {4}".format(
+            msg += "{0:<12} {1:<10} {2:<10} {3:<14} {4}\n".format(
                 user.name,
                 user.terminal or '-',
                 datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
