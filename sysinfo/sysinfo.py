@@ -137,8 +137,13 @@ class SysInfo:
     async def df(self, ctx):
         """File system disk space usage"""
 
-        template = "\n{0:<16} {1:>9} {2:>9} {3:>9} {4:>9}% {5:>9}  {6}"
-        msg = template.format("Device", "Total", "Used", "Free", "Used ", "Type", "Mount")
+        if len(psutil.disk_partitions(all=False)) == 0:
+            await self._say(ctx, "psutil could not find any disk partitions")
+            return
+
+        maxlen = len(max([p.device for p in psutil.disk_partitions(all=False)], key=len))
+        template = "\n{0:<{1}} {2:>9} {3:>9} {4:>9} {5:>9}% {6:>9}  {7}"
+        msg = template.format("Device", maxlen, "Total", "Used", "Free", "Used ", "Type", "Mount")
         for part in psutil.disk_partitions(all=False):
             if os.name == 'nt':
                 if 'cdrom' in part.opts or part.fstype == '':
@@ -148,6 +153,7 @@ class SysInfo:
             usage = psutil.disk_usage(part.mountpoint)
             msg += template.format(
                 part.device,
+                maxlen,
                 self._size(usage.total),
                 self._size(usage.used),
                 self._size(usage.free),
