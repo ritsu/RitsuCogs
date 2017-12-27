@@ -85,7 +85,6 @@ class CommandSearch:
         s_command = self._get_commands()
         # Name match only matches on command name, not group name(s)
         m_command_name = [c for c in s_command if search_string in c.name]
-        m_command_name.sort(key=lambda c: str(c).lower())
         # Help match is case insensitive
         m_command_help = [c for c in s_command if c.help and search_string.lower() in c.help.lower()]
 
