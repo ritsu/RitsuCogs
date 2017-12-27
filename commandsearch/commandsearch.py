@@ -52,7 +52,7 @@ class CommandSearch:
         s_cc = [] if cog_cc is None else [
             Custom(CustomType.cc, k, v) for k, v in cog_cc.c_commands.get(server.id, []).items()]
 
-        return s_alias + s_cc
+        return sorted(s_alias + s_cc, key=lambda c: c.name.lower())
 
     def _get_commands(self):
         """Get list of commands for server.
@@ -60,7 +60,7 @@ class CommandSearch:
         Returns:
             A list of :class:`discord.ext.commands.core.Command`
         """
-        return [c for c in self.bot.walk_commands()]
+        return sorted([c for c in self.bot.walk_commands()], key=lambda c: str(c).lower())
 
     def _get_cogs(self):
         """Get list of cogs for server.
@@ -76,7 +76,7 @@ class CommandSearch:
         Cog = namedtuple("Cog", "name doc tags")
 
         # Return list of named tuples for cogs
-        return [Cog(c, v.__doc__, None) for c, v in self.bot.cogs.items()]
+        return sorted([Cog(c, v.__doc__, None) for c, v in self.bot.cogs.items()], key=lambda c: c.name.lower())
 
     @commands.command(pass_context=True, aliases=["cmds", "coms"])
     async def commandsearch(self, ctx, search_string: str):
@@ -85,6 +85,7 @@ class CommandSearch:
         s_command = self._get_commands()
         # Name match only matches on command name, not group name(s)
         m_command_name = [c for c in s_command if search_string in c.name]
+        m_command_name.sort(key=lambda c: str(c).lower())
         # Help match is case insensitive
         m_command_help = [c for c in s_command if c.help and search_string.lower() in c.help.lower()]
 
