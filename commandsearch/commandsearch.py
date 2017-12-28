@@ -60,7 +60,9 @@ class CommandSearch:
         Returns:
             A list of :class:`discord.ext.commands.core.Command`
         """
-        return sorted([c for c in self.bot.walk_commands()], key=lambda c: str(c).lower())
+        maxlen = len(max(self.bot.cogs, key=len))
+        return sorted([c for c in self.bot.walk_commands()], key=lambda d: '{:<{}} {}'.format(
+            d.cog_name or ' none', maxlen, str(d)))
 
     def _get_cogs(self):
         """Get list of cogs for server.
