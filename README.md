@@ -271,8 +271,8 @@ instantly pick from members currently in channel, or create an "event" users can
 A set of commands that display system information for the machine running the bot. Note that some of these commands 
 may not not be available depending on your system environment.
 
-Will also install [psutil](https://pypi.python.org/pypi/psutil), which is used to retrieve system information. If this 
-does not happen automatically, you can manually install it with `pip3 install psutil`
+This cog will install [psutil](https://pypi.python.org/pypi/psutil), which is used to retrieve system information. If 
+this does not happen automatically, you can manually install it with `pip3 install psutil`
 
 ### Commands
 - **sys info** displays a summary of cpu, memory, disk and network information.
@@ -339,8 +339,8 @@ does not happen automatically, you can manually install it with `pip3 install ps
 Allows you to search [TokyoTosho](https://www.tokyotosho.info/) from discord and configure custom RSS alerts that 
 notify you when new torrents matching user defined criteria appear on the site.
 
-Will also install [js2py](https://pypi.python.org/pypi/Js2Py) to access TokyoTosho behind CloudFlare. If this does not 
-happen automatically, you can manually install it with `pip3 install js2py`
+This cog will install [js2py](https://pypi.python.org/pypi/Js2Py) to access TokyoTosho behind CloudFlare. If this does 
+not happen automatically, you can manually install it with `pip3 install js2py`
 
 ### Commands
 - **tt search** will search for torrents based on search terms and category.
