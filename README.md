@@ -10,7 +10,7 @@ help or have questions that are not answered here, visit the official
 
 ## Contents
 - [What's new](#whats-new)
-- [CommnandSearch]($commandsearch)
+- [CommnandSearch](#commandsearch)
 - [GNU](#gnu)
 - [Helpless](#helpless)
 - [Pick](#pick)
@@ -159,140 +159,25 @@ A <a href="http://pastebin.com/api">pastebin API key</a> is required for this fe
                     start printing with line num from the start of input, instead of from the end.
     ```
 
-## TokyoTosho
-Allows you to search [TokyoTosho](https://www.tokyotosho.info/) from discord and configure custom RSS alerts that 
-notify you when new torrents matching user defined criteria appear on the site.
-
-Will also install [js2py](https://pypi.python.org/pypi/Js2Py) to access TokyoTosho behind CloudFlare. If this does not 
-happen automatically, you can manually install it with `pip3 install js2py`
-
-### Commands
-- **tt search** will search for torrents based on search terms and category.
-    ```
-    tt search <terms> [#category]
-    
-    terms      Regular search strings. Use '-' to exclude terms.
-    category   One of the categories defined on TokyoTosho.
-               Type '[p]tt cats' to see a list of valid categories.
-    
-    Examples   tt search horriblesubs madoka 1080
-               tt search madoka rebellion -dub #anime
-               tt search madoka #music
-    ```
-
-- **tt add** will add an RSS alert to your channel. The bot will display torrent name and link when a new torrent 
-matching the configured `terms` and `categories` (optional) appears in TokyoTosho's RSS feed. Note you can specify 
-    ```
-    tt add <terms> [#categories]
-    
-    terms      Regular search strings. Use '-' to exclude terms.
-    category   One of the categories defined on TokyoTosho.
-               Type '[p]tt cats' to see a list of valid categories.
-    
-    Examples   tt add horriblesubs madoka 1080
-               tt add madoka -horriblesubs -dub
-               tt add madoka #anime #music
-               tt add shokugeki 1080 -raw #anime
-    ```
-
-- **tt list** will lists existing alerts configured for your channel.
-    ```
-    tt list
-    ```
-
-- **tt check** will check existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, 
-so old items may not appear.
-    ```
-    tt check
-    ```
-
-- **tt remove** will remove alerts matching (exactly) the specified `terms` and `categories` if they exist in your 
-channel. If no matching alerts are found, nothing happens.
-    ```
-    tt remove [terms] [#categories]
-    ```
-
-- **tt set** is used for configuring various options for the cog.
-    ```
-    tt set [option] [value]
-    
-    OPTIONS
-        check_interval      Number of seconds between RSS updates
-        comment_length      Max length of search result and RSS feed comments
-        ignore              List of categories that are ignored in all search and RSS alerts
-        items_per_message   Max number of items the bot will mention in one message
-    ```
-
-## SysInfo
-A set of commands that display system information for the machine running the bot. Note that some of these commands 
-may not not be available depending on your system environment.
-
-Will also install [psutil](https://pypi.python.org/pypi/psutil), which is used to retrieve system information. If this 
-does not happen automatically, you can manually install it with `pip3 install psutil`
+## Helpless
+Hides help messages for commands users do not have permissions for based on 
+[Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins). This works for `[p]help` and `[p]help COMMAND` 
+when typed in a channel. This does not affect `[p]help` typed in DMs. If you are the bot owner, you will not notice any 
+difference because you always have permissions for everything. If [Permissions](https://github.com/tekulvw/Squid-Plugins) 
+is not enabled, this cog does _nothing_.
 
 ### Commands
-- **sys info** displays a summary of cpu, memory, disk and network information.
+- **helpless on** turns on help filtering.
     ```
-    sys info
-    ```
-
-- **sys df** shows file system disk space usage, similar to "df -h" on linux.
-    ```
-    sys df
+    helpless on
     ```
 
-- **sys free** shows the amount of free and used memory in the system, similar to "free" on linux.
+- **helpless off** turns off help filtering.
     ```
-    sys free
-    ```
-
-- **sys ifconfig** shows network interface information, similar to "ifconfig" on linux.
-    ```
-    sys ifconfig
-    ```
-
-- **sys iotop** shows I/O usage information output by the kernel, like a snapshot of "iotop" on linux.
-    ```
-    sys iotop
-    ```
-
-- **sys meminfo** shows system memory information.
-    ```
-    sys meminfo
-    ```
-
-- **sys netstat** shows information about the networking subsystem, similar to "netstat -antp" on linux.
-    ```
-    sys netstat
-    ```
-
-- **sys nettop** shows a snapshot of real-time network statistics.
-    ```
-    sys nettop
-    ```
-
-- **sys mem** shows physical memory usage, taking shared memory pages into account, similar to "smem" on linux.
-    ```
-    sys smem
-    ```
-
-- **sys ps** shows information about active processes, similar to "ps -aux" on linux.
-    ```
-    sys ps
-    ```
-
-- **sys top** shows real-time system information and tasks, like a snapshot of "top" on linux.
-    ```
-    sys top
-    ```
-
-- **sys who** shows which users are currently logged in, similar to "who" on linux
-    ```
-    sys who
+    helpless off
     ```
 
 ## Pick
-
 Pick random users from your channel. Use this to perform giveaways, raffles, and other types of contests. This can 
 instantly pick from members currently in channel, or create an "event" users can enter by typing a keyword in chat.
 
@@ -312,7 +197,7 @@ instantly pick from members currently in channel, or create an "event" users can
               pick 3 +sub +patreon -mod -admin -offline -invisible
     ```
 
-- **pickfor** will create a _pick event_ that users can enter by typing the name of the event in chat.
+- **pickfor** creates a _pick event_ that users can enter by typing the name of the event in chat.
     ```
     pickfor <event> <duration> [num] +[role] -[role]
     
@@ -381,4 +266,135 @@ instantly pick from members currently in channel, or create an "event" users can
     Examples  picks show giveaway
               picks show giveaway #contests
     ```
+    
+## SysInfo
+A set of commands that display system information for the machine running the bot. Note that some of these commands 
+may not not be available depending on your system environment.
 
+Will also install [psutil](https://pypi.python.org/pypi/psutil), which is used to retrieve system information. If this 
+does not happen automatically, you can manually install it with `pip3 install psutil`
+
+### Commands
+- **sys info** displays a summary of cpu, memory, disk and network information.
+    ```
+    sys info
+    ```
+
+- **sys df** shows file system disk space usage, similar to "df -h" on linux.
+    ```
+    sys df
+    ```
+
+- **sys free** shows the amount of free and used memory in the system, similar to "free" on linux.
+    ```
+    sys free
+    ```
+
+- **sys ifconfig** shows network interface information, similar to "ifconfig" on linux.
+    ```
+    sys ifconfig
+    ```
+
+- **sys iotop** shows I/O usage information output by the kernel, like a snapshot of "iotop" on linux.
+    ```
+    sys iotop
+    ```
+
+- **sys meminfo** shows system memory information.
+    ```
+    sys meminfo
+    ```
+
+- **sys netstat** shows information about the networking subsystem, similar to "netstat -antp" on linux.
+    ```
+    sys netstat
+    ```
+
+- **sys nettop** shows a snapshot of real-time network statistics.
+    ```
+    sys nettop
+    ```
+
+- **sys mem** shows physical memory usage, taking shared memory pages into account, similar to "smem" on linux.
+    ```
+    sys smem
+    ```
+
+- **sys ps** shows information about active processes, similar to "ps -aux" on linux.
+    ```
+    sys ps
+    ```
+
+- **sys top** shows real-time system information and tasks, like a snapshot of "top" on linux.
+    ```
+    sys top
+    ```
+
+- **sys who** shows which users are currently logged in, similar to "who" on linux
+    ```
+    sys who
+    ```
+
+## TokyoTosho
+Allows you to search [TokyoTosho](https://www.tokyotosho.info/) from discord and configure custom RSS alerts that 
+notify you when new torrents matching user defined criteria appear on the site.
+
+Will also install [js2py](https://pypi.python.org/pypi/Js2Py) to access TokyoTosho behind CloudFlare. If this does not 
+happen automatically, you can manually install it with `pip3 install js2py`
+
+### Commands
+- **tt search** will search for torrents based on search terms and category.
+    ```
+    tt search <terms> [#category]
+    
+    terms      Regular search strings. Use '-' to exclude terms.
+    category   One of the categories defined on TokyoTosho.
+               Type '[p]tt cats' to see a list of valid categories.
+    
+    Examples   tt search horriblesubs madoka 1080
+               tt search madoka rebellion -dub #anime
+               tt search madoka #music
+    ```
+
+- **tt add** will add an RSS alert to your channel. The bot will display torrent name and link when a new torrent 
+matching the configured `terms` and `categories` (optional) appears in TokyoTosho's RSS feed. Note you can specify 
+    ```
+    tt add <terms> [#categories]
+    
+    terms      Regular search strings. Use '-' to exclude terms.
+    category   One of the categories defined on TokyoTosho.
+               Type '[p]tt cats' to see a list of valid categories.
+    
+    Examples   tt add horriblesubs madoka 1080
+               tt add madoka -horriblesubs -dub
+               tt add madoka #anime #music
+               tt add shokugeki 1080 -raw #anime
+    ```
+
+- **tt list** will lists existing alerts configured for your channel.
+    ```
+    tt list
+    ```
+
+- **tt check** will check existing alerts against the current RSS feed. The RSS feed only contains the last 150 items, 
+so old items may not appear.
+    ```
+    tt check
+    ```
+
+- **tt remove** will remove alerts matching (exactly) the specified `terms` and `categories` if they exist in your 
+channel. If no matching alerts are found, nothing happens.
+    ```
+    tt remove [terms] [#categories]
+    ```
+
+- **tt set** is used for configuring various options for the cog.
+    ```
+    tt set [option] [value]
+    
+    OPTIONS
+        check_interval      Number of seconds between RSS updates
+        comment_length      Max length of search result and RSS feed comments
+        ignore              List of categories that are ignored in all search and RSS alerts
+        items_per_message   Max number of items the bot will mention in one message
+    ```
