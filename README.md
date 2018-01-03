@@ -2,7 +2,7 @@
 
 A small collection of cogs for [Red-DiscordBot](https://github.com/Cog-Creators/Red-DiscordBot). If you need 
 help or have questions that are not answered here, visit the official 
-[Red Cogs Support server](a href="https://discord.gg/SzUq8fy") and mention _@kagami#6142_.
+[Red Cogs Support server](https://discord.gg/SzUq8fy) and mention _@kagami#6142_.
 
 ## Quick start
 1. Install repo: ```[p]cog repo add RitsuCogs https://github.com/ritsu/RitsuCogs```
