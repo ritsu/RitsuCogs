@@ -28,9 +28,6 @@ class PickEvent:
     num       : int               number of users to pick
     roles     : dict              roles to include or exclude
     statuses  : dict              statuses to include or exclude
-    online    : bool              whether or not user must be online (not needed)
-    not_afk   : bool              whether or not the user must be not_afk; if True, and user is
-                                  invisible or dnd and attempts to enter, user will be ignored
     picktype  : :enum:`PickType`  type of pick
     itemtype  : str               type of item
     items     : list              users / names entered in the event
@@ -38,7 +35,7 @@ class PickEvent:
     """
 
     __slots__ = ["author", "channel", "name", "duration", "num", "roles", "statuses",
-                 "online", "not_afk", "picktype", "itemtype", "items", "start_time"]
+                 "picktype", "itemtype", "items", "start_time"]
 
     def __init__(self, message, **kwargs):
         self.author = message.author
@@ -48,8 +45,6 @@ class PickEvent:
         self.num = kwargs.get("num", 1)
         self.roles = kwargs.get("roles", {"include": set(), "exclude": set()})
         self.statuses = kwargs.get("statuses", {"include": set(), "exclude": set()})
-        self.online = kwargs.get("online", False)
-        self.not_afk = kwargs.get("not_afk", False)
         self.picktype = kwargs.get("picktype", PickType.instant)
         self.itemtype = "choice" if self.picktype == PickType.custom else "member"
         self.items = []
