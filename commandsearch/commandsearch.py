@@ -1,11 +1,14 @@
 import discord
 import aiohttp
+import asyncio
+from urllib.parse import quote
 from collections import namedtuple
 from enum import Enum
 from discord.ext import commands
 from .utils.chat_formatting import pagify, box
 from __main__ import send_cmd_help
 import re
+from cogs.utils import checks
 
 
 class CustomType(Enum):
@@ -21,6 +24,9 @@ class CommandSearch:
 
     def __init__(self, bot):
         self.bot = bot
+
+        # Results from a red portal search
+        self.m_redp = {"waiting": False}
 
     def _get_customs(self, server: discord.server.Server):
         """Get list of non-standard commands for server.
@@ -80,8 +86,53 @@ class CommandSearch:
         # Return list of named tuples for cogs
         return sorted([Cog(c, v.__doc__, None) for c, v in self.bot.cogs.items()], key=lambda c: c.name.lower())
 
+    async def _redp_search(self, search_string: str):
+        """Search cogs on red portal with search string.
+
+        When done, sets self.m_redp["waiting"] to False, and
+        self.m_redp["data"] to data dict returned from red portal.
+
+        If there are results, self.m_redp["data"] will contain
+            {"error":false,
+             "results":{"list":[]}}
+        If there are no results, self.m_redp["data"] will contain
+            {"error":"EntryNotFound",
+             "error_details":"No results for this search",
+             "results":{}}
+        """
+        # Build api url
+        base_url = "https://cogs.red/api/v1/search/cogs"
+        url = '{}/{}'.format(base_url, quote(search_string))
+
+        # Future response dict
+        data = None
+
+        try:
+            async with aiohttp.get(url, headers={"User-Agent": "Sono-Bot"}) as response:
+                data = await response.json()
+        except:
+            # Maybe set this to something more useful?
+            data = None
+
+        self.m_redp["data"] = data
+        self.m_redp["waiting"] = False
+
+    async def _redp_debug(self, channel):
+        """For testing/debugging"""
+        while self.m_redp["waiting"]:
+            await asyncio.sleep(1)
+        msg = "\n\n**Red Portal Cogs:**\n"
+        if not self.m_redp["data"] or not self.m_redp["data"]["results"]:
+            msg += "none"
+        else:
+            msg += "\n".join(["{} - {} by {}".format(
+                cog["repo"]["name"], cog["name"], cog["author"]["name"])
+                for cog in self.m_redp["data"]["results"]["list"]])
+        await self.bot.send_message(channel, msg)
+
     @commands.command(pass_context=True, aliases=["cmds", "coms"])
-    async def commandsearch(self, ctx, search_string: str):
+    @checks.is_owner()
+    async def commandsearch(self, ctx, *, search_string: str):
         """Search commands and cogs"""
         # Match command
         s_command = self._get_commands()
@@ -99,6 +150,11 @@ class CommandSearch:
         s_cog = self._get_cogs()
         m_cog_name = [c for c in s_cog if search_string.lower() in c.name.lower()]
         m_cog_doc = [c for c in s_cog if c.doc and search_string.lower() in c.doc.lower()]
+
+        # Get red portal cogs
+        self.m_redp["waiting"] = True
+        self.bot.loop.create_task(self._redp_search(search_string))
+        self.bot.loop.create_task(self._redp_debug(ctx.message.channel))
 
         # Debug
         await self._show_matches(search_string,
@@ -120,7 +176,8 @@ class CommandSearch:
         for k, v in kwargs.items():
             if k == "command_name":
                 msg += "\n\n**Command Name:**\n"
-                msg += "\n".join([re.sub(pat_word, rep_word, str(c)) for c in v])
+                msg += "\n".join(["{:<30} {:>30}".format(
+                    re.sub(pat_word, rep_word, str(c)), c.cog_name) for c in v])
             elif k == "command_help":
                 msg += "\n\n**Command Help:**\n"
                 msg += "\n".join([re.sub(pat_word, rep_word, "\n".join(re.findall(pat_line, c.help))) for c in v])
