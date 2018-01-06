@@ -18,7 +18,7 @@ help or have questions that are not answered here, visit the official
 - [Tokyotosho](#tokyotosho)
 
 ## What's new
-- 2018-01-03: New year, new README. Also added [helpless](#helpless) which filters help messages based on 
+- 2018-01-03: New year, new README. Also added [Helpless](#helpless) which filters help messages based on 
 [Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins).
 
 
