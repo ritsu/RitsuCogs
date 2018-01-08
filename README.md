@@ -18,6 +18,7 @@ help or have questions that are not answered here, visit the official
 - [Tokyotosho](#tokyotosho)
 
 ## What's new
+- 2018-01-07: Updated [Helpless](#helpless) with the ability to disable global help command and help via DMs.
 - 2018-01-03: New year, new README. Also added [Helpless](#helpless) which filters help messages based on 
 [Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins).
 
@@ -160,21 +161,62 @@ A <a href="http://pastebin.com/api">pastebin API key</a> is required for this fe
     ```
 
 ## Helpless
-Hides help messages for commands users do not have permissions for based on 
-[Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins). This works for `[p]help` and `[p]help COMMAND` 
-when typed in a channel. This does not affect `[p]help` typed in DMs. If you are the bot owner, you will not notice any 
-difference because you always have permissions for everything. If [Permissions](https://github.com/tekulvw/Squid-Plugins) 
-is not enabled, this cog does _nothing_.
+Allows owner to disable the global help command, disallow help via DMs, and/or hide help based on 
+[Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins). If you are the bot owner, you will not notice 
+any difference when you use the help command because you always have permissions for everything. If you want to test 
+the help filters, login as a different Discord user.
 
 ### Commands
-- **helpless on** turns on help filtering.
+- **helpless bot on** turns on bot help filtering (aka global help). 
+This disables `[p]help` when used without any arguments.
     ```
-    helpless on
+    helpless bot on
     ```
 
-- **helpless off** turns off help filtering.
+- **helpless bot off** turns off bot help filtering (aka global help). 
+This allows `[p]help` to be used without any arguments.
     ```
-    helpless off
+    helpless bot off
+    ```
+
+- **helpless bot msg** sets the placeholder message that is displayed when bot help is disabled.
+    ```
+    helpless bot msg <msg>
+    ```
+
+- **helpless dm on** turns on DM help filtering. This prevents users from using the help command in DMs.
+    ```
+    helpless dm on
+    ```
+
+- **helpless dm off** turns off DM help filtering. This allows users to use the help command in DMs.
+    ```
+    helpless dm off
+    ```
+
+- **helpless dm msg** sets the placeholder message that is displayed when DM help is disabled.
+    ```
+    helpless dm msg <msg>
+    ```
+
+- **helpless p on** turns on help filtering based on Squid-Plugins Permissions cog.
+    ```
+    helpless p on
+    ```
+
+- **helpless p off** turns off help filtering based on Squid-Plugins Permissions cog.
+    ```
+    helpless p off
+    ```
+
+- **helpless p msg** sets the placeholder message that is displayed when help is disabled by Permissions.
+    ```
+    helpless p msg <msg>
+    ```
+
+- **helpless config** shows current Helpless config.
+    ```
+    helpless config
     ```
 
 ## Pick
