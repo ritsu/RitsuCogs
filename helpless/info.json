@@ -1,9 +1,9 @@
 {
   "AUTHOR" : "kagami#6142",
   "NAME" : "Helpless",
-  "SHORT" : "Hides help for commands based on Permissions from Squid-Plugins",
-  "DESCRIPTION" : "Hides help for commands based on Permissions from Squid-Plugins. If a user does not have permission for a command, they will not see it in '[p]help', and '[p]help command' will just show 'Command disabled.' This only affects [p]help in a server managed by the Permissions cog from Squid-Plugins. This does not affect [p]help in DMs. If you are the bot owner, you will not notice any difference because you always have permissions for everything. If the Permissions cog is not enabled, this cog does nothing.",
-  "TAGS" : ["permission", "permissions", "help"],
-  "INSTALL_MSG" : "Thank you for installing Helpless from RitsuCogs.\nCommands: [p]helpless on, [p]helpless off",
+  "SHORT" : "Disable global help command, don't allow help via DM, and/or hide help based on Squid-Plugins Permissions.",
+  "DESCRIPTION" : "Disable global help command, don't allow help via DM, and/or hide help based on Squid-Plugins Permissions. You can toggle help filtering for each type, and set the default message displayed when help is disabled. (Note: If you are the bot owner, you will not notice any difference because you always have permissions for everything.)",
+  "TAGS" : ["permission", "permissions", "help", "disable"],
+  "INSTALL_MSG" : "Thank you for installing Helpless from RitsuCogs.\nCommands: [p]helpless p, [p]helpless bot, [p]helpless dm, [p]helpless config",
   "DISABLED" : false
 }
