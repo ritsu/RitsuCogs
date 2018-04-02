@@ -1,12 +1,14 @@
 import random
 import time
 import math
+import os
+import asyncio
 import discord
 from discord.ext import commands
 from enum import Enum
 from __main__ import send_cmd_help
-import asyncio
-
+from cogs.utils import checks
+from cogs.utils.dataIO import dataIO
 
 class PickType(Enum):
     """ Types of events for PickEvent """
@@ -94,8 +96,13 @@ class PickEvent:
 class Pick:
     """Pick random users from your channel"""
 
+    default_config = {"auto-dm": False}
+    base_dir = os.path.join("data", "pick")
+    config_path = os.path.join(base_dir, "config.json")
+
     def __init__(self, bot):
         self.bot = bot
+        self.config = dataIO.load_json(self.config_path)
         self.events = []
         self.task = bot.loop.create_task(self.check_events())
 
@@ -108,6 +115,36 @@ class Pick:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
             return
+
+    @checks.is_owner()
+    @picks.group(pass_context=True, name="set")
+    async def picks_set(self, ctx):
+        """Manage global settings for pick events"""
+        if ctx.invoked_subcommand is None or isinstance(ctx.invoked_subcommand, commands.Group):
+            await send_cmd_help(ctx)
+            return
+
+    @picks_set.command(pass_context=True, name="auto-dm")
+    async def picks_set_auto_dm(self, ctx, toggle: str = ""):
+        """Set bot to automatically DM a user when they enter a pick event
+
+        Description:
+          toggle   Turn auto-dm "on" or "off"
+
+        Examples:
+          picks set auto-dm on   Turn auto-dm on
+          picks set auto-dm off  Turn auto-dm off
+          picks set auto-dm      Show current auto-dm setting
+        """
+
+        if toggle.lower() == "on":
+            self.config["auto-dm"] = True
+            dataIO.save_json(self.config_path, self.config)
+        elif toggle.lower() == "off":
+            self.config["auto-dm"] = False
+            dataIO.save_json(self.config_path, self.config)
+        self.config = dataIO.load_json(self.config_path)
+        await self.bot.say("Auto-DM is {}".format("ON" if self.config["auto-dm"] is True else "OFF"))
 
     @picks.command(pass_context=True, name="delete")
     async def picks_delete(self, ctx, name: str, channel: discord.Channel=None):
@@ -386,8 +423,10 @@ class Pick:
         for event in [e for e in self.events if e.channel == message.channel and e.name == message.content]:
             if not event.contains(message.author) and event.validate(message.author):
                 event.add(message.author)
-                await self.bot.send_message(message.author, "You have been entered in the event **{}** in {}".format(
-                    event.name, event.channel.mention))
+                if self.config["auto-dm"]:
+                    await self.bot.send_message(
+                        message.author, "You have been entered in the event **{}** in {}".format(
+                            event.name, event.channel.mention))
 
     async def _show_picks(self, event: PickEvent):
         """Perform picks and display results in event channel"""
@@ -456,6 +495,20 @@ class Pick:
             return "{:02d}:{:02d}".format(m, s)
 
 
+def check_folders():
+    if not os.path.exists(Pick.base_dir):
+        print("Creating " + Pick.base_dir + " folder...")
+        os.makedirs(Pick.base_dir)
+
+
+def check_files():
+    if not dataIO.is_valid_json(Pick.config_path):
+        print("Creating default " + Pick.config_path + " ...")
+        dataIO.save_json(Pick.config_path, Pick.default_config)
+
+
 def setup(bot):
+    check_folders()
+    check_files()
     n = Pick(bot)
     bot.add_cog(n)
