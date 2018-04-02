@@ -382,7 +382,7 @@ class Pick:
         """Check messages for entries into events"""
         if message.author.bot:
             return
-        for event in [e for e in self.events if e.channel == message.channel and e.name == message.clean_content]:
+        for event in [e for e in self.events if e.channel == message.channel and e.name == message.content]:
             if not event.contains(message.author) and event.validate(message.author):
                 event.add(message.author)
 
@@ -390,14 +390,15 @@ class Pick:
         """Perform picks and display results in event channel"""
         picks = event.pick()
         embed = discord.Embed(colour=event.author.colour)
-        embed.title = "Picked {}".format(len(picks))
+        embed.description = "Picked **{}**".format(len(picks))
         if event.picktype == PickType.instant:
-            embed.title += " {}{}".format(event.itemtype, "" if len(picks) == 1 else "s")
+            embed.description += " {}{}".format(event.itemtype, "" if len(picks) == 1 else "s")
         elif event.picktype == PickType.event:
-            embed.title += " {}{} for *{}*".format(event.itemtype, "" if len(picks) == 1 else "s", event.name)
+            embed.description += " {}{} for **{}**".format(event.itemtype, "" if len(picks) == 1 else "s", event.name)
         if len(picks) > 0:
             if event.picktype == PickType.custom:
-                embed.description = "\n".join(["**{}**".format(p) for p in picks])
+                embed.description += "\n"
+                embed.description += "\n".join(["**{}**".format(p) for p in picks])
             else:
                 names = "\n".join(["[**{}**]({})".format(p.display_name, p.avatar_url) for p in picks])
                 ids = "\n".join([str(p) for p in picks])
