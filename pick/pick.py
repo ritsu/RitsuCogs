@@ -125,14 +125,14 @@ class Pick:
             channel = ctx.message.channel
         events = [event for event in self.events if event.channel == channel and event.name == name]
         if len(events) == 0:
-            await self.bot.say("Event `{}` not found in channel `{}`".format(name, channel.name))
+            await self.bot.say("Event **{}** not found in {}".format(name, channel.mention))
             return
         event = events[0]
         if event.author != ctx.message.author:
             await self.bot.say("Only the event creator can delete this event")
         else:
             self.events.remove(event)
-            await self.bot.say("**{}** deleted.".format(event.name))
+            await self.bot.say("**{}** deleted from {}".format(event.name, event.channel.mention))
 
     @picks.command(pass_context=True, name="force")
     async def picks_force(self, ctx, name: str, channel: discord.Channel=None):
@@ -150,7 +150,7 @@ class Pick:
             channel = ctx.message.channel
         events = [event for event in self.events if event.channel == channel and event.name == name]
         if len(events) == 0:
-            await self.bot.say("Event `{}` not found in channel `{}`".format(name, channel.name))
+            await self.bot.say("Event **{}** not found in {}".format(name, channel.mention))
             return
         event = events[0]
         if event.author != ctx.message.author:
@@ -175,10 +175,10 @@ class Pick:
             channel = ctx.message.channel
         events = [event for event in self.events if event.channel == channel and event.name == name]
         if len(events) == 0:
-            await self.bot.say("Event `{}` not found in channel `{}`".format(name, channel.name))
+            await self.bot.say("**{}** not found in {}".format(name, channel.mention))
             return
         event = events[0]
-        msg = "Stats for **{0}**. Type **{0}** in *#{1}* to be entered.".format(event.name, event.channel.name)
+        msg = "Stats for **{0}**. Type **{0}** in {1} to enter.".format(event.name, event.channel.mention)
         await self._show_event(event, ctx.message.channel, msg)
 
     @picks.command(pass_context=True, name="check")
@@ -205,8 +205,8 @@ class Pick:
         if len(events) > 0:
             embed.add_field(name="Event", value="\n".join(["**{}**".format(e.name) for e in events]))
             embed.add_field(name="Remaining", value="\n".join([self._seconds_to_hms(e.time_left()) for e in events]))
-            embed.add_field(name="Creator", value="\n".join(["[**{}**]({}) in _#{}_".format(
-                e.author.display_name, e.author.avatar_url, e.channel.name) for e in events]))
+            embed.add_field(name="Creator", value="\n".join(["[**{}**]({}) in #{}".format(
+                e.author.display_name, e.author.avatar_url, e.channel.mention) for e in events]))
         else:
             embed.description = "None"
         await self.bot.send_message(ctx.message.channel, embed=embed)
@@ -340,7 +340,7 @@ class Pick:
             await self.bot.say(msg)
             return
         self.events.append(event)
-        msg = "**{0}** started! Type **{0}** in chat within {1} to be entered.".format(
+        msg = "**{0}** started! Type **{0}** in chat within {1} to enter.".format(
             event.name, self._seconds_to_hms(event.duration))
         await self._show_event(event, event.channel, msg)
 
