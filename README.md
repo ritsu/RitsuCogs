@@ -18,6 +18,9 @@ help or have questions that are not answered here, visit the official
 - [Tokyotosho](#tokyotosho)
 
 ## What's new
+- 2018-04-01: Updated [Pick](#pick) with option to automatically DM a user when they enter a pick event. (This is 
+disabled by deafult; use `[p]picks set auto-dm on` to enable.)
+- 2018-04-01: Updated [Pick](#pick) to allow @member and #channel mentions in event names. 
 - 2018-01-07: Updated [Helpless](#helpless) with the ability to disable global help command and help via DMs.
 - 2018-01-03: New year, new README. Also added [Helpless](#helpless) which filters help messages based on 
 [Squid-Plugins Permissions](https://github.com/tekulvw/Squid-Plugins).
@@ -298,7 +301,7 @@ instantly pick from members currently in channel, or create an "event" users can
     picks list
     ```
     
-- **picks show** will show details about a pick event
+- **picks show** will show details about a pick event.
     ```
     picks show <name> [channel]
 
@@ -307,6 +310,13 @@ instantly pick from members currently in channel, or create an "event" users can
     
     Examples  picks show giveaway
               picks show giveaway #contests
+    ```
+
+- **picks set auto-dm** toggles the option to automatically DM users when they enter a pick event.
+    ```
+    picks set auto-dm on   Turn auto-dm on
+    picks set auto-dm off  Turn auto-dm off
+    picks set auto-dm      Show current auto-dm setting
     ```
     
 ## SysInfo
