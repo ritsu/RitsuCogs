@@ -186,7 +186,8 @@ class Pick:
         """Check if you are entered into any pick events.
         Bot will whisper you.
         """
-        events = ["**{}**".format(event.name) for event in self.events if event.contains(ctx.message.author)]
+        events = ["**{}** in {}".format(
+            event.name, event.channel.mention) for event in self.events if event.contains(ctx.message.author)]
         if len(events) == 0:
             await self.bot.whisper("You are not entered in any events.")
         else:
@@ -385,6 +386,8 @@ class Pick:
         for event in [e for e in self.events if e.channel == message.channel and e.name == message.content]:
             if not event.contains(message.author) and event.validate(message.author):
                 event.add(message.author)
+                await self.bot.send_message(message.author, "You have been entered in the event **{}** in {}".format(
+                    event.name, event.channel.mention))
 
     async def _show_picks(self, event: PickEvent):
         """Perform picks and display results in event channel"""
