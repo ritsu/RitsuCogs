@@ -10,7 +10,7 @@ help or have questions that are not answered here, visit the official
 
 ## Contents
 - [What's new](#whats-new)
-- [CommnandSearch](#commandsearch)
+- [CommandSearch](#commandsearch)
 - [GNU](#gnu)
 - [Helpless](#helpless)
 - [Pick](#pick)
