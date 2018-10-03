@@ -58,7 +58,7 @@ class CustomHelpFormatter(commands.HelpFormatter):
             fake_context.command = self.command
             has_perm = perm_cog.resolve_permission(fake_context)
             if not has_perm:
-                self._paginator.add_line("This command has been disabled.", empty=True)
+                self._paginator.add_line(help_config["permission"]["msg"], empty=True)
                 self._paginator.close_page()
                 return self._paginator.pages
             else:
@@ -66,7 +66,7 @@ class CustomHelpFormatter(commands.HelpFormatter):
 
         # If subcommand list is empty, do not return normal help text
         if len(list(self.filter_command_list())) == 0:
-            self._paginator.add_line("This command has been disabled.", empty=True)
+            self._paginator.add_line(help_config["permission"]["msg"], empty=True)
             self._paginator.close_page()
             return self._paginator.pages
 
